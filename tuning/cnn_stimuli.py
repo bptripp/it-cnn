@@ -1,15 +1,13 @@
 __author__ = 'bptripp'
 
-from os import listdir
-from os.path import join, isfile, basename
+from os import listdir, makedirs
+from os.path import join, isfile, basename, exists
 import numpy as np
 from scipy import misc
 import string
 
 import matplotlib
-# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-# import cv2
 
 def get_image_file_list(source_path, extension, with_path=False):
     if with_path:
@@ -42,6 +40,9 @@ def process_lehky_files(source_path, dest_path):
     full_shape = [256,256,3]
     background = 127
     files = get_image_file_list(source_path, 'ppm')
+
+    if not exists(dest_path):
+        makedirs(dest_path)
 
     for file in files:
         image = misc.imread(join(source_path, file))
@@ -82,13 +83,14 @@ def clean_lehky_image(image, border, background):
 
 
 def make_orientations(source_image_file, orientations, dest_path):
+    if not exists(dest_path):
+        makedirs(dest_path)
+
     source_name = basename(source_image_file)[:-4]
 
     source_image = misc.imread(source_image_file)
     scale = 100. / np.max(source_image.shape)
     source_image = misc.imresize(source_image, scale)
-
-    print(source_image.shape)
 
     full_dim = 256
     ccr_dim = int(2*np.ceil(full_dim/2*2**.5)) # cover corners when rotated
@@ -97,7 +99,6 @@ def make_orientations(source_image_file, orientations, dest_path):
     background_colour = source_image[0,0,:]
     big_image = np.tile(background_colour, [ccr_dim,ccr_dim,1])
     corner = [ccr_dim/2-source_image.shape[0]/2, ccr_dim/2-source_image.shape[1]/2]
-    print(corner)
     ss = source_image.shape
     big_image[corner[0]:corner[0]+ss[0],corner[1]:corner[1]+ss[1],:] = source_image
 
@@ -118,7 +119,10 @@ def make_orientations(source_image_file, orientations, dest_path):
 
 
 def make_sizes(source_image_file, scales, dest_path):
-    print(source_image_file)
+    if not exists(dest_path):
+        makedirs(dest_path)
+
+    # print(source_image_file)
     source_name = basename(source_image_file)[:-4]
     source_image = misc.imread(source_image_file)
     background_colour = source_image[0,0,:]
@@ -147,6 +151,9 @@ def make_sizes(source_image_file, scales, dest_path):
 
 
 def make_positions(source_image_file, scale, offsets, dest_path):
+    if not exists(dest_path):
+        makedirs(dest_path)
+
     source_name = basename(source_image_file)[:-4]
     source = misc.imread(source_image_file)
     source = misc.imresize(source, scale)
@@ -170,6 +177,9 @@ def make_positions(source_image_file, scale, offsets, dest_path):
 
 
 def make_positions_schwartz(source_image_file, offset, dest_path):
+    if not exists(dest_path):
+        makedirs(dest_path)
+
     source_name = basename(source_image_file)[:-4]
     source = misc.imread(source_image_file)
     background_colour = source[0,0,:]
@@ -195,7 +205,6 @@ def make_positions_schwartz(source_image_file, offset, dest_path):
 
 
 def make_occlusions(dest_path):
-
     def make_background():
         return 1 + 254*np.tile(np.random.randint(0, 2, [256,256,1]), [1,1,3])
 
@@ -237,6 +246,10 @@ def make_occlusions(dest_path):
                     image[block_dim*i:block_dim*(i+1), block_dim*j:block_dim*(j+1), :] = 255
 
     def save_occlusions(name, x, y, line_width):
+        d = join(dest_path, name)
+        if not exists(d):
+            makedirs(d)
+
         # x, y: lists of coordinates of shape outline to plot
         percent_occlusion = [0, 20, 50, 90, 100]
         for p in percent_occlusion:
@@ -265,6 +278,12 @@ def make_occlusions(dest_path):
 
 
 def make_clutters(source_path, dest_path):
+    if not exists(dest_path):
+        makedirs(dest_path)
+        makedirs(join(dest_path+'/top'))
+        makedirs(join(dest_path+'/bottom'))
+        makedirs(join(dest_path+'/pair'))
+
     full_shape = [256,256,3]
     background_colour = 127
     files = get_image_file_list(source_path, 'ppm')
@@ -334,103 +353,101 @@ def make_3d(source_dir, dest_dir):
 
 
 if __name__ == '__main__':
-    # print(get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/lehky', 'ppm'))
-    # process_lehky_files('/Users/bptripp/code/salman-IT/salman/images/lehky',
-    #                     '/Users/bptripp/code/salman-IT/salman/images/lehky-processed')
+    # print(get_image_file_list('./source-images/lehky', 'ppm'))
 
-    # make_orientations('/Users/bptripp/code/salman-IT/salman/images/banana.png',
-    #                   np.linspace(0, 360, 91),
-    #                   '/Users/bptripp/code/salman-IT/salman/images/banana-rotations')
-    #
-    # make_orientations('/Users/bptripp/code/salman-IT/salman/images/shoe.png',
-    #                   np.linspace(0, 360, 91),
-    #                   '/Users/bptripp/code/salman-IT/salman/images/shoe-rotations')
-    #
-    # make_orientations('/Users/bptripp/code/salman-IT/salman/images/corolla.png',
-    #                   np.linspace(0, 360, 91),
-    #                   '/Users/bptripp/code/salman-IT/salman/images/corolla-rotations')
+    print('Cleaning Lehky et al. images ...')
+    process_lehky_files('./source-images/lehky',
+                        './images/lehky-processed')
 
-    # make_clutters('/Users/bptripp/code/salman-IT/salman/images/clutter-source',
-    #               '/Users/bptripp/code/salman-IT/salman/images/clutter')
+    print('Making orientation stimuli ... ')
+    make_orientations('./source-images/banana.png',
+                      np.linspace(0, 360, 91),
+                      './images/banana-rotations')
 
-    make_occlusions('/Users/bptripp/code/salman-IT/salman/images/occlusions')
+    make_orientations('./source-images/shoe.png',
+                      np.linspace(0, 360, 91),
+                      './images/shoe-rotations')
 
-    # # scales = [.15, .3, .6, 1.2]
-    # scales = np.logspace(np.log10(.05), np.log10(1.2), 45)
-    # ref_scale = scales[30]
-    # schwartz_big_ratio = 50**.5 / 28**.5 # size ratios from Schwartz et al., 1983 (multi-lobed stimuli)
-    # schwartz_small_ratio = 13**.5 / 28**.5
-    # print(schwartz_big_ratio)
-    # print(schwartz_small_ratio)
-    # print(scales / ref_scale)
+    make_orientations('./source-images/corolla.png',
+                      np.linspace(0, 360, 91),
+                      './images/corolla-rotations')
 
-    # schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f1.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f1')
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f2.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f2')
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f3.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f3')
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f4.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f4')
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f5.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f5')
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/schwartz/f6.png',
-    #            schwartz_scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/f6')
+    print('Making clutter stimuli ... ')
+    make_clutters('./source-images/clutter',
+                  './images/clutter')
 
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/corolla.png',
-    #            scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/corolla')
-    #
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/shoe.png',
-    #            scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/shoe')
-    #
-    # make_sizes('/Users/bptripp/code/salman-IT/salman/images/banana.png',
-    #            scales,
-    #            '/Users/bptripp/code/salman-IT/salman/images/scales/banana')
+    print('Making occlusion stimuli ... ')
+    make_occlusions('./images/occlusions')
 
-    # # offsets = [-75, -50, -25, 0, 25, 50, 75]
-    # offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
-    # make_positions('/Users/bptripp/code/salman-IT/salman/images/shoe.png', .4,
-    #            offsets,
-    #            '/Users/bptripp/code/salman-IT/salman/images/positions/shoe')
-    #
-    # make_positions('/Users/bptripp/code/salman-IT/salman/images/banana.png', .4,
-    #            offsets,
-    #            '/Users/bptripp/code/salman-IT/salman/images/positions/banana')
-    #
-    # make_positions('/Users/bptripp/code/salman-IT/salman/images/corolla.png', .4,
-    #            offsets,
-    #            '/Users/bptripp/code/salman-IT/salman/images/positions/corolla')
+    print('Making size tuning stimuli ... ')
+    schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
+    make_sizes('./source-images/schwartz/f1.png',
+               schwartz_scales,
+               './images/scales/f1')
+    make_sizes('./source-images/schwartz/f2.png',
+               schwartz_scales,
+               './images/scales/f2')
+    make_sizes('./source-images/schwartz/f3.png',
+               schwartz_scales,
+               './images/scales/f3')
+    make_sizes('./source-images/schwartz/f4.png',
+               schwartz_scales,
+               './images/scales/f4')
+    make_sizes('./source-images/schwartz/f5.png',
+               schwartz_scales,
+               './images/scales/f5')
+    make_sizes('./source-images/schwartz/f6.png',
+               schwartz_scales,
+               './images/scales/f6')
+
+    scales = np.logspace(np.log10(.05), np.log10(1.2), 45)
+    make_sizes('./source-images/corolla.png',
+               scales,
+               './images/scales/corolla')
+
+    make_sizes('./source-images/shoe.png',
+               scales,
+               './images/scales/shoe')
+
+    make_sizes('./source-images/banana.png',
+               scales,
+               './images/scales/banana')
+
+    print('Making position tuning stimuli ... ')
+    offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
+    make_positions('./source-images/shoe.png', .4,
+               offsets,
+               './images/positions/shoe')
+
+    make_positions('./source-images/banana.png', .4,
+               offsets,
+               './images/positions/banana')
+
+    make_positions('./source-images/corolla.png', .4,
+               offsets,
+               './images/positions/corolla')
 
     # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
     # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
-    # schwartz_offset = 35
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f1.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f1')
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f2.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f2')
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f3.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f3')
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f4.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f4')
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f5.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f5')
-    # make_positions_schwartz('/Users/bptripp/code/salman-IT/salman/images/schwartz/f6.png',
-    #                         schwartz_offset,
-    #                         '/Users/bptripp/code/salman-IT/salman/images/positions/f6')
+    schwartz_offset = 35
+    make_positions_schwartz('./source-images/schwartz/f1.png',
+                            schwartz_offset,
+                            './images/positions/f1')
+    make_positions_schwartz('./source-images/schwartz/f2.png',
+                            schwartz_offset,
+                            './images/positions/f2')
+    make_positions_schwartz('./source-images/schwartz/f3.png',
+                            schwartz_offset,
+                            './images/positions/f3')
+    make_positions_schwartz('./source-images/schwartz/f4.png',
+                            schwartz_offset,
+                            './images/positions/f4')
+    make_positions_schwartz('./source-images/schwartz/f5.png',
+                            schwartz_offset,
+                            './images/positions/f5')
+    make_positions_schwartz('./source-images/schwartz/f6.png',
+                            schwartz_offset,
+                            './images/positions/f6')
 
     # make_3d('/Users/bptripp/code/salman-IT/salman/images/scooter',
     #         '/Users/bptripp/code/salman-IT/salman/images/scooter-cropped')

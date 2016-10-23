@@ -1,6 +1,7 @@
 weights
 training/images
 tuning/images
+source-images/lehky
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
