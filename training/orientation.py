@@ -6,8 +6,8 @@ import cPickle as pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from salman.alexnet import preprocess, load_net
-from bertsekas.auction import auction
+from alexnet import preprocess, load_net
+from auction import auction
 
 """
 TODO:
@@ -15,10 +15,10 @@ TODO:
 - DONE run network to get existing tuning
 - DONE generate orientation tuning samples
 - DONE choose Bertsekas integer resolution
-- dicard all but ~200 output units
-- normalize and use Bertsekas to pair up with empirical model
-- scale empirical responses and make labels
-- generator
+- DONE dicard all but ~200 output units
+- DONE normalize and use Bertsekas to pair up with empirical model
+- DONE scale empirical responses and make labels
+- DONE generator
 - LATER optionally resample orientation tuning curves each minibatch to reduce sampling bias (although there are many samples)
 - LATER recharacterize all tuning
 - DONE load existing network & strip last layer
@@ -89,40 +89,80 @@ def normalize_curves(tuning_curves):
     return tuning_curves / nm[None,:]
 
 
+def get_XY(model, stimulus):
+    images = get_images(stimulus, extension)
+    actual_curves = model.predict(images)
+
+    n = 200
+    ideal_curves = make_ideal_tuning_curves(angles, n)
+
+    similarities = get_similarities(actual_curves[:,:n], ideal_curves)
+    A = ((1+similarities)*50).astype(int)
+    assignments, prices = auction(A)
+
+    target_curves = get_targets(actual_curves, ideal_curves, assignments)
+
+    return images, target_curves
+
+
+def get_targets(actual_curves, ideal_curves, assignments):
+    n = ideal_curves.shape[1]
+    target_curves = actual_curves.copy()
+    for i in range(n):
+        target_curves[:,i] = ideal_curves[:,assignments[i]]
+        scale_factor = np.abs(np.mean(actual_curves[:,i]) / np.mean(target_curves[:,i]))
+        target_curves[:,i] = target_curves[:,i] * scale_factor
+    return target_curves
+
+
 if __name__ == '__main__':
     angles = range(0, 361, 10)
 
-    model = load_net(weights_path='../salman/weights/alexnet_weights.h5')
+    model = load_net()
 
     image_path = '/Users/bptripp/data/orientations/'
     extension = '.png'
     stimuli = find_stimuli(image_path, extension)
+    print(stimuli)
+
+    # start_time = time.time()
+    # images = get_images(stimuli[0], extension)
+    #
+    # print('image time: ' + str(time.time() - start_time))
+    # actual_curves = model.predict(images)
+    # print('model time: ' + str(time.time() - start_time))
+    #
+    # n = 200
+    # ideal_curves = make_ideal_tuning_curves(angles, n)
+    #
+    # similarities = get_similarities(actual_curves[:,:n], ideal_curves)
+    # A = ((1+similarities)*50).astype(int)
+    #
+    # start_time = time.time()
+    # assignments, prices = auction(A)
+    # print('auction time: ' + str(time.time() - start_time)) #.14
+    #
+    # target_curves = get_targets(actual_curves, ideal_curves, assignments)
+    #
+    # plt.figure(figsize=(8,8))
+    #
+    # for i in range(8):
+    #     for j in range(8):
+    #         ind = 8*i+j
+    #         plt.subplot(8,8,ind+1)
+    #         plt.plot(actual_curves[:,ind])
+    #         # plt.plot(ideal_curves[:,assignments[ind]])
+    #         plt.plot(target_curves[:,ind])
+    #
+    # plt.show()
+
+    def generate_XY():
+        while 1:
+            ind = np.random.randint(0, len(stimuli))
+            X, Y = get_XY(model, stimuli[ind])
+            yield X, Y
 
 
-    start_time = time.time()
-    images = get_images(stimuli[0], extension)
-    print('image time: ' + str(time.time() - start_time))
-    actual_curves = model.predict(images)
-    print('model time: ' + str(time.time() - start_time))
-
-    n = 200
-    # n = actual_curves.shape[1]
-    ideal_curves = make_ideal_tuning_curves(angles, n)
-
-    # print(ideal_curves.shape)
-    # print(actual_curves.shape)
-
-    similarities = get_similarities(actual_curves[:,:n], ideal_curves)
-    # print(actual_curves[:,:n])
-    # print(ideal_curves)
-    A = ((1+similarities)*50).astype(int)
-    print(A)
-
-
-
-    # A = np.array([[5, 9, 2], [10, 3, 2], [8, 7, 4]])
-    # print(A)
-    start_time = time.time()
-    assignments, prices = auction(A)
-    print(assignments)
-    print('auction time: ' + str(time.time() - start_time))
+    h = model.fit_generator(generate_XY(),
+        samples_per_epoch=len(stimuli)*len(angles), nb_epoch=50)
+        # validation_data=(X_valid, Y_valid))

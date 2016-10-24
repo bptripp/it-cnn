@@ -3,18 +3,28 @@ __author__ = 'bptripp'
 # Testing responses of pre-trained AlexNet for comparison with IT
 
 from keras.optimizers import SGD
-
+import keras
 from convnetskeras.convnets import preprocess_image_batch, convnet
 
-def load_net(remove_last_layer=True, weights_path='../weights/alexnet_weights.h5'):
+
+def load_net(remove_last_layer=True, weights_path='../weights/alexnet_weights.h5', units_to_keep=None):
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-    model = convnet('alexnet',weights_path=weights_path, heatmap=False)
-    model.compile(optimizer=sgd, loss='mse')
+    model = convnet('alexnet', weights_path=weights_path, heatmap=False)
 
     if remove_last_layer:
         pop(model) #activation
         pop(model) #dense
         pop(model) #dropout
+
+        # https://github.com/fchollet/keras/issues/2640
+        # although it looks like this is done correctly already
+        model.layers[-1].outbound_nodes = []
+        model.outputs = [model.layers[-1].output]
+
+        # this code is from Container.__init__
+        model.internal_output_shapes = [x._keras_shape for x in model.outputs]
+
+    model.compile(optimizer=sgd, loss='mse')
 
     return model
 
@@ -45,3 +55,5 @@ def preprocess(image_files):
     return preprocess_image_batch(image_files, img_size=(256,256), crop_size=(227,227), color_mode="rgb")
 
 
+if __name__ == '__main__':
+    load_net(weights_path='./weights/alexnet_weights.h5', units_to_keep=100)

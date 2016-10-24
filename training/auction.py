@@ -55,7 +55,7 @@ def auction(A, epsilon=None, epsilonDecreaseFactor=None):
 
     Returns
     -------
-    :return assignments:
+    :return assignments: best assignment per row of A
     :return prices:
     """
 
