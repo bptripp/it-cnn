@@ -10,15 +10,15 @@ from alexnet import preprocess, load_net
 
 model = load_net()
 
-bottom_dir = '/Users/bptripp/code/salman-IT/salman/images/clutter/bottom/'
+bottom_dir = './images/clutter/bottom/'
 bottom_image_files = get_image_file_list(bottom_dir, 'png', with_path=True)
 bottom_out = model.predict(preprocess(bottom_image_files))
 
-top_dir = '/Users/bptripp/code/salman-IT/salman/images/clutter/top/'
+top_dir = './images/clutter/top/'
 top_image_files = get_image_file_list(top_dir, 'png', with_path=True)
 top_out = model.predict(preprocess(top_image_files))
 
-pair_dir = '/Users/bptripp/code/salman-IT/salman/images/clutter/pair/'
+pair_dir = './images/clutter/pair/'
 pair_image_files = get_image_file_list(pair_dir, 'png', with_path=True)
 pair_out = model.predict(preprocess(pair_image_files))
 
@@ -48,5 +48,5 @@ plt.ylim((0,16))
 plt.xlabel('Sum of responses to single objects', fontsize=14)
 plt.ylabel('Response to object pairs', fontsize=14)
 plt.tight_layout()
-plt.savefig('clutter.eps')
+plt.savefig('../figures/clutter.eps')
 plt.show()

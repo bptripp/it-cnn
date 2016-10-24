@@ -1,7 +1,5 @@
 __author__ = 'bptripp'
 
-# TODO: artefact every 11 degrees except also 290,291,295
-
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,9 +31,7 @@ def smooth(out, ind, n=5):
 
     filter = 1./n*np.ones(n)
     print('filter: ' + str(filter))
-    # filter = [.25, .25, .25]
     for i in range(wrapped.shape[1]):
-        # smooth[:,i] = np.convolve(smooth[:,i], filter, 'same')
         wrapped[:,i] = fftconvolve(wrapped[:,i], filter, 'same')
 
     return wrapped[l:2*l,:]
@@ -71,50 +67,50 @@ def plot_curves(out, n, kernel_len=5, angles=None, normalize=False):
 if __name__ == '__main__':
     model = load_net()
 
-    # plt.figure(figsize=(10,3))
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/banana-rotations/', 'png', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
-    # plt.subplot(1,3,1)
-    # plot_curves(out, 10)
-    # plt.ylabel('Response')
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/shoe-rotations/', 'png', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
-    # plt.subplot(1,3,2)
-    # plot_curves(out, 10)
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/corolla-rotations/', 'png', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
-    # plt.subplot(1,3,3)
-    # plot_curves(out, 10)
-    # plt.tight_layout()
-    # plt.savefig('orientation.eps')
-    # plt.show()
+    plt.figure(figsize=(10,3))
+    image_files = get_image_file_list('./images/banana-rotations/', 'png', with_path=True)
+    im = preprocess(image_files)
+    out = model.predict(im)
+    plt.subplot(1,3,1)
+    plot_curves(out, 10)
+    plt.ylabel('Response')
+    image_files = get_image_file_list('./images/shoe-rotations/', 'png', with_path=True)
+    im = preprocess(image_files)
+    out = model.predict(im)
+    plt.subplot(1,3,2)
+    plot_curves(out, 10)
+    image_files = get_image_file_list('./images/corolla-rotations/', 'png', with_path=True)
+    im = preprocess(image_files)
+    out = model.predict(im)
+    plt.subplot(1,3,3)
+    plot_curves(out, 10)
+    plt.tight_layout()
+    plt.savefig('../figures/orientation.eps')
+    plt.show()
 
-    # plt.figure(figsize=(7,3))
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/staple-cropped/', 'jpg', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
-    # plt.subplot(1,2,1)
-    # plot_curves(out, 10, kernel_len=3, angles=range(0,361,10))
-    # plt.ylabel('Response')
-    # plt.title('Staple')
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scooter-cropped/', 'jpg', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
-    # plt.subplot(1,2,2)
-    # plot_curves(out, 10, kernel_len=3, angles=range(0,361,15))
-    # plt.title('Scooter')
-    # plt.tight_layout()
-    # plt.savefig('orientation3d.eps')
-    # plt.show()
+    plt.figure(figsize=(7,3))
+    image_files = get_image_file_list('./source-images/staple/', 'jpg', with_path=True)
+    im = preprocess(image_files)
+    out = model.predict(im)
+    plt.subplot(1,2,1)
+    plot_curves(out, 10, kernel_len=3, angles=range(0,361,10))
+    plt.ylabel('Response')
+    plt.title('Staple')
+    image_files = get_image_file_list('./source-images/scooter/', 'jpg', with_path=True)
+    im = preprocess(image_files)
+    out = model.predict(im)
+    plt.subplot(1,2,2)
+    plot_curves(out, 10, kernel_len=3, angles=range(0,361,15))
+    plt.title('Scooter')
+    plt.tight_layout()
+    plt.savefig('../figures/orientation3d.eps')
+    plt.show()
 
     plt.figure(figsize=(7,3))
     n = 15
     kernel_len = 3
     angles = range(0,361,10)
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/staple-cropped/', 'jpg', with_path=True)
+    image_files = get_image_file_list('./source-images/staple/', 'jpg', with_path=True)
     im = preprocess(image_files)
     out = model.predict(im)
     plt.subplot(1,2,1)
@@ -139,14 +135,11 @@ if __name__ == '__main__':
         fake[:,i] = np.exp(-(angles-prefs[i])**2 / 2 / widths[i]**2)
 
 
-    # image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scooter-cropped/', 'jpg', with_path=True)
-    # im = preprocess(image_files)
-    # out = model.predict(im)
     plt.subplot(1,2,2)
     plot_curves(fake, n, kernel_len=kernel_len, angles=angles, normalize=True)
     plt.title('Empirical')
     plt.ylim([0,1])
 
     plt.tight_layout()
-    plt.savefig('orientation-salman.eps')
+    plt.savefig('../figures/orientation-salman.eps')
     plt.show()

@@ -14,36 +14,36 @@ model = load_net()
 
 if True:
     out = []
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/banana', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/banana', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/shoe', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/shoe', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/corolla', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/corolla', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
     out = np.array(out)
     print(out.shape)
 
-if False:
+if True:
     out = []
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f1', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f1', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f2', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f2', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f3', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f3', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f4', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f4', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f5', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f5', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/scales/f6', 'png', with_path=True)
+    image_files = get_image_file_list('./images/scales/f6', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
     out = np.array(out)
@@ -100,7 +100,7 @@ def bandwidth(scales, responses):
     return result
 
 
-if False: # plot invariance with Schwartz stimuli
+if True: # plot invariance with Schwartz stimuli
     i = 0
     c = 0
     n_invariant = 0
@@ -132,7 +132,7 @@ if False: # plot invariance with Schwartz stimuli
         i = i + 1
     print(n_invariant)
     plt.tight_layout()
-    plt.savefig('size-invariance-schwartz.eps')
+    plt.savefig('../figures/size-invariance-schwartz.eps')
     plt.show()
 
 if False: #plot invariance with naturalistic stimuli
@@ -159,7 +159,7 @@ if False: #plot invariance with naturalistic stimuli
         i = i + 1
     print(n_invariant)
     plt.tight_layout()
-    plt.savefig('size-invariance.eps')
+    plt.savefig('../figures/size-invariance.eps')
     plt.show()
 
 if False: # plot example tuning curves
@@ -204,7 +204,7 @@ if True: # plot histograms of bandwidth and preferred size
     plt.xlabel('Size BW (Octaves)', fontsize=fs)
     plt.ylabel('Frequency', fontsize=fs)
     plt.tight_layout()
-    plt.savefig('bandwidth.eps')
+    plt.savefig('../figures/bandwidth.eps')
     plt.show()
 
 

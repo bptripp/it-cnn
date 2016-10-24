@@ -225,7 +225,7 @@ if True:
 
 
 plot_selectivity_and_sparseness(rect.T, 16)
-plt.savefig('selectivity-salman.eps')
+plt.savefig('../figures/selectivity-salman.eps')
 plt.show()
 
 

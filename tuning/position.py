@@ -20,8 +20,8 @@ def get_centre_of_mass(x, y):
     pass
 
 
-if True:
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/banana', 'png', with_path=True)
+if False:
+    image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
     im = preprocess(image_files)
     out = model.predict(im)
 
@@ -67,15 +67,15 @@ if True:
     plt.show()
 
 
-if False:
+if True:
     out = []
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/banana', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/shoe', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/shoe', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/corolla', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/corolla', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
     out = np.array(out)
@@ -102,28 +102,28 @@ if False:
         plt.plot(offsets, smoothed)
         plt.xticks([-75,-50,-25,0,25,50,75])
     plt.tight_layout()
-    plt.savefig('figures/position-tuning.eps')
+    plt.savefig('../figures/position-tuning.eps')
     plt.show()
 
 
-if False:
+if True:
     out = []
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f1', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f1', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f2', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f2', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f3', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f3', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f4', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f4', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f5', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f5', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
-    image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/positions/f6', 'png', with_path=True)
+    image_files = get_image_file_list('./images/positions/f6', 'png', with_path=True)
     im = preprocess(image_files)
     out.append(model.predict(im))
     out = np.array(out)
@@ -149,7 +149,7 @@ def clear_preference(out):
     return np.max(np.abs(np.diff(max_ind))) == 0
 
 
-if False: # plot invariance with Schwartz stimuli
+if True: # plot invariance with Schwartz stimuli
     i = 0
     c = 0
     n_invariant = 0
@@ -175,7 +175,7 @@ if False: # plot invariance with Schwartz stimuli
         i = i + 1
     print(n_invariant)
     plt.tight_layout()
-    plt.savefig('figures/position-invariance-schwartz.eps')
+    plt.savefig('../figures/position-invariance-schwartz.eps')
     plt.show()
 
 
