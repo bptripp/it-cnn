@@ -86,7 +86,7 @@ def get_similarities(actual_curves, ideal_curves):
 
 def normalize_curves(tuning_curves):
     #one tuning curve per column
-    nm = np.linalg.norm(tuning_curves, axis=0, ord=2)
+    nm = np.linalg.norm(tuning_curves, axis=0, ord=2) + 1e-6
     return tuning_curves / nm[None,:]
 
 
@@ -110,7 +110,7 @@ def get_targets(actual_curves, ideal_curves, assignments):
     n = ideal_curves.shape[1]
     target_curves = actual_curves.copy()
     for i in range(n):
-        target_curves[:,i] = ideal_curves[:,assignments[i]]
+        target_curves[:,i] = ideal_curves[:,int(assignments[i])]
         scale_factor = np.abs(np.mean(actual_curves[:,i]) / np.mean(target_curves[:,i]))
         target_curves[:,i] = target_curves[:,i] * scale_factor
     return target_curves
@@ -118,13 +118,16 @@ def get_targets(actual_curves, ideal_curves, assignments):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('image_path', help='path to stimulus images')
-    image_path = parser.parse_args().image_path
+    parser.add_argument('train_image_path', help='path to stimulus images for training')
+    parser.add_argument('valid_image_path', help='path to stimulus images for validation')
+    train_image_path = parser.parse_args().train_image_path
+    valid_image_path = parser.parse_args().valid_image_path
 
     extension = '.png'
-    stimuli = find_stimuli(image_path, extension)
-    # print(stimuli)
-    print('Processing ' + str(len(stimuli)) + ' inputs from ' + image_path)
+    train_stimuli = find_stimuli(train_image_path, extension)
+    valid_stimuli = find_stimuli(valid_image_path, extension)
+    print('Processing ' + str(len(train_stimuli)) + ' training inputs from ' + train_image_path)
+    print('Processing ' + str(len(valid_stimuli)) + ' validation inputs from ' + valid_image_path)
 
     angles = range(0, 361, 10)
 
@@ -142,13 +145,24 @@ if __name__ == '__main__':
     #
     # plt.show()
 
-    def generate_XY():
+    def generate_training():
         while 1:
-            ind = np.random.randint(0, len(stimuli))
-            X, Y = get_XY(model, stimuli[ind])
+            ind = np.random.randint(0, len(train_stimuli))
+            X, Y = get_XY(model, train_stimuli[ind])
             yield X, Y
 
+    def generate_validation():
+        while 1:
+            ind = np.random.randint(0, len(valid_stimuli))
+            X, Y = get_XY(model, valid_stimuli[ind])
+            yield X, Y
 
-    h = model.fit_generator(generate_XY(),
-        samples_per_epoch=len(stimuli)*len(angles), nb_epoch=50)
-        # validation_data=(X_valid, Y_valid))
+    h = model.fit_generator(generate_training(),
+        samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=50,
+        validation_data=generate_validation(), nb_val_samples=len(valid_stimuli)*len(angles))
+
+    model.save_weights('orientation_weights.h5')
+
+    f = open('orientation_history.pkl', 'wb')
+    pickle.dump(h, f)
+    f.close()
