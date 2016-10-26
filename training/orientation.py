@@ -1,5 +1,6 @@
 __author__ = 'bptripp'
 
+import argparse
 from os import listdir
 from os.path import isfile, join, isdir, basename, split
 import cPickle as pickle
@@ -116,34 +117,19 @@ def get_targets(actual_curves, ideal_curves, assignments):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('image_path', help='path to stimulus images')
+    image_path = parser.parse_args().image_path
+
+    extension = '.png'
+    stimuli = find_stimuli(image_path, extension)
+    # print(stimuli)
+    print('Processing ' + str(len(stimuli)) + ' inputs from ' + image_path)
+
     angles = range(0, 361, 10)
 
     model = load_net()
 
-    image_path = '/Users/bptripp/data/orientations/'
-    extension = '.png'
-    stimuli = find_stimuli(image_path, extension)
-    print(stimuli)
-
-    # start_time = time.time()
-    # images = get_images(stimuli[0], extension)
-    #
-    # print('image time: ' + str(time.time() - start_time))
-    # actual_curves = model.predict(images)
-    # print('model time: ' + str(time.time() - start_time))
-    #
-    # n = 200
-    # ideal_curves = make_ideal_tuning_curves(angles, n)
-    #
-    # similarities = get_similarities(actual_curves[:,:n], ideal_curves)
-    # A = ((1+similarities)*50).astype(int)
-    #
-    # start_time = time.time()
-    # assignments, prices = auction(A)
-    # print('auction time: ' + str(time.time() - start_time)) #.14
-    #
-    # target_curves = get_targets(actual_curves, ideal_curves, assignments)
-    #
     # plt.figure(figsize=(8,8))
     #
     # for i in range(8):
