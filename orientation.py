@@ -75,7 +75,7 @@ def get_images(stimulus, extension):
 
 def get_image_paths(stimulus, extension):
     directory, partial_name = split(stimulus)
-    return [join(directory, f) for f in listdir(directory) if f.startswith(partial_name) and f.endswith(extension)]
+    return [join(directory, f) for f in listdir(directory) if f.startswith(partial_name + '-') and f.endswith(extension)]
 
 
 def get_similarities(actual_curves, ideal_curves):
