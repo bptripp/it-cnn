@@ -1,7 +1,7 @@
 __author__ = 'bptripp'
 
 import argparse
-from os import listdir
+from os import listdir, rename
 from os.path import isfile, join, isdir, basename, split
 import cPickle as pickle
 import numpy as np
@@ -116,6 +116,21 @@ def get_targets(actual_curves, ideal_curves, assignments):
     return target_curves
 
 
+def fix_file_names(image_path):
+    for file_name in listdir(image_path):
+        if isdir(join(image_path, file_name)):
+            new_name = file_name.replace('-', '_')
+            if not new_name == file_name:
+                print('renaming ' + join(image_path, file_name) + ' to ' + join(image_path, new_name))
+                rename(join(image_path, file_name), join(image_path, new_name))
+                for image_file_name in listdir(join(image_path, new_name)):
+                    image_new_name = image_file_name.replace(file_name, new_name)
+                    print('renaming ' + join(image_path, new_name, image_file_name)
+                          + ' to ' + join(image_path, new_name, image_new_name))
+                    rename(join(image_path, new_name, image_file_name),
+                           join(image_path, new_name, image_new_name))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('train_image_path', help='path to stimulus images for training')
@@ -123,11 +138,22 @@ if __name__ == '__main__':
     train_image_path = parser.parse_args().train_image_path
     valid_image_path = parser.parse_args().valid_image_path
 
+    fix_file_names(valid_image_path)
+    fix_file_names(train_image_path)
+
     extension = '.png'
     train_stimuli = find_stimuli(train_image_path, extension)
     valid_stimuli = find_stimuli(valid_image_path, extension)
+    print(len(listdir(train_image_path)))
+    print(len(listdir(valid_image_path)))
     print('Processing ' + str(len(train_stimuli)) + ' training inputs from ' + train_image_path)
     print('Processing ' + str(len(valid_stimuli)) + ' validation inputs from ' + valid_image_path)
+
+    # for fn in listdir(train_image_path):
+    #     if isdir(join(train_image_path, fn)):
+    #         l = len(listdir(join(train_image_path, fn)))
+    #         print(str(l) + ' in ' + fn)
+
 
     angles = range(0, 361, 10)
 
