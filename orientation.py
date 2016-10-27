@@ -190,7 +190,7 @@ if __name__ == '__main__':
     model.save_weights('orientation_weights.h5')
 
     f = open('orientation_history.pkl', 'wb')
-    pickle.dump(h, f)
+    pickle.dump(h.history, f)
     f.close()
 
     stimulus = valid_stimuli[0]
