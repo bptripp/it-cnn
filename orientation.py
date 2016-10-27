@@ -184,11 +184,18 @@ if __name__ == '__main__':
             yield X, Y
 
     h = model.fit_generator(generate_training(),
-        samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=50,
+        samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=1,
         validation_data=generate_validation(), nb_val_samples=len(valid_stimuli)*len(angles))
 
     model.save_weights('orientation_weights.h5')
 
     f = open('orientation_history.pkl', 'wb')
     pickle.dump(h, f)
+    f.close()
+
+    stimulus = valid_stimuli[0]
+    images = get_images(stimulus, extension)
+    validation_curves = model.predict(images)
+    f = open('orientation_example.pkl', 'wb')
+    pickle.dump(validation_curves, f)
     f.close()
