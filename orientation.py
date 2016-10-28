@@ -1,6 +1,7 @@
 __author__ = 'bptripp'
 
 import argparse
+import logging
 from os import listdir, rename
 from os.path import isfile, join, isdir, basename, split
 import cPickle as pickle
@@ -94,6 +95,8 @@ def get_XY(model, stimulus, baseline_mean):
     images = get_images(stimulus, extension)
     actual_curves = model.predict(images)
 
+    logging.debug('stimulus: ' + stimulus)
+
     n = 200
     ideal_curves = make_ideal_tuning_curves(angles, n)
 
@@ -102,6 +105,9 @@ def get_XY(model, stimulus, baseline_mean):
     assignments, prices = auction(A)
 
     target_curves = get_targets(actual_curves, ideal_curves, assignments, baseline_mean)
+
+    logging.debug('images shape: ' + str(images.shape))
+    logging.debug('target curves shape: ' + str(target_curves.shape))
 
     return images, target_curves
 
@@ -139,6 +145,8 @@ def fix_file_names(image_path):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='orientation.log', level=logging.DEBUG)
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('train_image_path', help='path to stimulus images for training')
     parser.add_argument('valid_image_path', help='path to stimulus images for validation')
