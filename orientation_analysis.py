@@ -3,6 +3,7 @@ __author__ = 'bptripp'
 import argparse
 import numpy as np
 import cPickle as pickle
+import matplotlib.pyplot as plt
 from alexnet import preprocess, load_net
 from orientation import find_stimuli, get_images
 
@@ -34,4 +35,17 @@ if action == 'save':
     pickle.dump((valid_stimuli, curves), f)
     f.close()
 
+if action == 'plot':
+    f = open(curves_file, 'rb')
+    valid_stimuli, curves = pickle.load(f)
+    f.close()
 
+    plt.figure(figsize=(8,8))
+
+    for i in range(8):
+        for j in range(8):
+            ind = 8*i+j
+            plt.subplot(8,8,ind+1)
+            plt.plot(curves[0,:,ind])
+
+    plt.show()

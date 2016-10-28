@@ -90,7 +90,7 @@ def normalize_curves(tuning_curves):
     return tuning_curves / nm[None,:]
 
 
-def get_XY(model, stimulus):
+def get_XY(model, stimulus, baseline_mean):
     images = get_images(stimulus, extension)
     actual_curves = model.predict(images)
 
@@ -101,20 +101,25 @@ def get_XY(model, stimulus):
     A = ((1+similarities)*50).astype(int)
     assignments, prices = auction(A)
 
-    target_curves = get_targets(actual_curves, ideal_curves, assignments)
+    target_curves = get_targets(actual_curves, ideal_curves, assignments, baseline_mean)
 
     return images, target_curves
 
 
-def get_targets(actual_curves, ideal_curves, assignments):
-    #TODO: calculate mean amplitude over ~5 example before training
-    #TODO: maintain mean amplitude over first n curves
+def get_targets(actual_curves, ideal_curves, assignments, baseline_mean):
     n = ideal_curves.shape[1]
     target_curves = actual_curves.copy()
     for i in range(n):
         target_curves[:,i] = ideal_curves[:,int(assignments[i])]
         scale_factor = np.abs(np.mean(actual_curves[:,i]) / np.mean(target_curves[:,i]))
         target_curves[:,i] = target_curves[:,i] * scale_factor
+
+    if baseline_mean is not None:
+        #maintain the mean so targets don't sneak down to zero
+        target_mean = np.mean(target_curves[:,:n])
+        if target_mean > 0:
+            target_curves[:,:n] = target_curves[:,:n] * baseline_mean / target_mean
+
     return target_curves
 
 
@@ -173,16 +178,25 @@ if __name__ == '__main__':
     #
     # plt.show()
 
+    # find baseline mean rate with some random stimuli
+    baseline_means = []
+    baseline_inds = np.random.randint(len(valid_stimuli), size=10)
+    for ind in baseline_inds:
+        print('baseline from ' + valid_stimuli[ind])
+        images = get_images(valid_stimuli[ind], extension)
+        baseline_means.append(np.mean(model.predict(images)))
+    baseline_mean = np.mean(baseline_means)
+
     def generate_training():
         while 1:
             ind = np.random.randint(0, len(train_stimuli))
-            X, Y = get_XY(model, train_stimuli[ind])
+            X, Y = get_XY(model, train_stimuli[ind], baseline_mean)
             yield X, Y
 
     def generate_validation():
         while 1:
             ind = np.random.randint(0, len(valid_stimuli))
-            X, Y = get_XY(model, valid_stimuli[ind])
+            X, Y = get_XY(model, valid_stimuli[ind], None)
             yield X, Y
 
     h = model.fit_generator(generate_training(),
