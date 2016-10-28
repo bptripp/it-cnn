@@ -107,6 +107,8 @@ def get_XY(model, stimulus):
 
 
 def get_targets(actual_curves, ideal_curves, assignments):
+    #TODO: calculate mean amplitude over ~5 example before training
+    #TODO: maintain mean amplitude over first n curves
     n = ideal_curves.shape[1]
     target_curves = actual_curves.copy()
     for i in range(n):
@@ -187,15 +189,9 @@ if __name__ == '__main__':
         samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=1,
         validation_data=generate_validation(), nb_val_samples=len(valid_stimuli)*len(angles))
 
-    model.save_weights('orientation_weights.h5')
+    model.save_weights('orientation_weights.h5', overwrite=True)
 
     f = open('orientation_history.pkl', 'wb')
     pickle.dump(h.history, f)
     f.close()
 
-    stimulus = valid_stimuli[0]
-    images = get_images(stimulus, extension)
-    validation_curves = model.predict(images)
-    f = open('orientation_example.pkl', 'wb')
-    pickle.dump(validation_curves, f)
-    f.close()
