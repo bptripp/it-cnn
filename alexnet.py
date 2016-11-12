@@ -8,7 +8,7 @@ from convnetskeras.convnets import preprocess_image_batch, convnet
 
 
 def load_net(remove_last_layer=True, weights_path='weights/alexnet_weights.h5', units_to_keep=None):
-    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.00001, decay=1e-6, momentum=0.9, nesterov=True)
     model = convnet('alexnet', weights_path=weights_path, heatmap=False)
 
     if remove_last_layer:

@@ -95,14 +95,19 @@ def get_XY(model, stimulus, baseline_mean):
     images = get_images(stimulus, extension)
     actual_curves = model.predict(images)
 
-    logging.debug('stimulus: ' + stimulus)
+    logging.info(stimulus)
 
     n = 200
     ideal_curves = make_ideal_tuning_curves(angles, n)
 
-    similarities = get_similarities(actual_curves[:,:n], ideal_curves)
-    A = ((1+similarities)*50).astype(int)
-    assignments, prices = auction(A)
+    assignments = get_assignments(actual_curves[:,:n], ideal_curves)
+    #similarities = get_similarities(actual_curves[:,:n], ideal_curves)
+    #A = ((1+similarities)*50).astype(int)
+    #assignments, prices = auction(A)
+
+    logging.debug('ideal curves shape: ' + str(ideal_curves.shape))
+    #logging.debug('similarities shape: ' + str(similarities.shape))
+    logging.debug('assignments shape: ' + str(assignments.shape))
 
     target_curves = get_targets(actual_curves, ideal_curves, assignments, baseline_mean)
 
@@ -110,6 +115,25 @@ def get_XY(model, stimulus, baseline_mean):
     logging.debug('target curves shape: ' + str(target_curves.shape))
 
     return images, target_curves
+
+
+def get_cost(model, stimulus, baseline_mean):
+    images = get_images(stimulus, extension)
+    actual_curves = model.predict(images)
+
+    n = 200
+    ideal_curves = make_ideal_tuning_curves(angles, n)
+
+    assignments = get_assignments(actual_curves[:,:n], ideal_curves)
+    target_curves = get_targets(actual_curves, ideal_curves, assignments, baseline_mean)
+    return np.mean((actual_curves - target_curves)**2)
+
+
+def get_assignments(actual_curves, ideal_curves):
+    similarities = get_similarities(actual_curves, ideal_curves)
+    A = ((1+similarities)*50).astype(int)
+    assignments, prices = auction(A)
+    return assignments
 
 
 def get_targets(actual_curves, ideal_curves, assignments, baseline_mean):
@@ -207,13 +231,23 @@ if __name__ == '__main__':
             X, Y = get_XY(model, valid_stimuli[ind], None)
             yield X, Y
 
-    h = model.fit_generator(generate_training(),
-        samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=1,
-        validation_data=generate_validation(), nb_val_samples=len(valid_stimuli)*len(angles))
+    val_cost = []
+    for i in range(50):
+        h = model.fit_generator(generate_training(),
+            samples_per_epoch=len(train_stimuli)*len(angles), nb_epoch=1)
+            #validation_data=generate_validation(), nb_val_samples=len(valid_stimuli)*len(angles))
 
-    model.save_weights('orientation_weights.h5', overwrite=True)
+        val_cost_i = []
+        for vs in valid_stimuli: 
+            val_cost_i.append(get_cost(model, vs, baseline_mean))
+        val_cost.append(np.mean(val_cost_i))
+        print('validation cost: ' + str(np.mean(val_cost_i)))
+        with open('orientation_history.pkl', 'wb') as f:
+            pickle.dump(val_cost, f)
 
-    f = open('orientation_history.pkl', 'wb')
-    pickle.dump(h.history, f)
-    f.close()
+        model.save_weights('orientation_weights' + str(i) + '.h5', overwrite=True)
+
+    #f = open('orientation_history.pkl', 'wb')
+    #pickle.dump(h.history, f)
+    #f.close()
 
