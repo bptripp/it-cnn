@@ -40,7 +40,7 @@ if action == 'plot':
     valid_stimuli, curves = pickle.load(f)
     f.close()
 
-    plt.figure(figsize=(8,8))
+    plt.figure(figsize=(12,12))
 
     for i in range(8):
         for j in range(8):
