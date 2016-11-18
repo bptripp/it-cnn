@@ -8,12 +8,10 @@ matplotlib.rcParams['xtick.labelsize'] = 16
 matplotlib.rcParams['ytick.labelsize'] = 16
 import matplotlib.pyplot as plt
 from cnn_stimuli import get_image_file_list
-from alexnet import preprocess, load_net
+from alexnet import preprocess, load_net, load_vgg
 from orientation import smooth
 
 offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
-
-model = load_net()
 
 
 def get_centre_of_mass(x, y):
@@ -21,6 +19,7 @@ def get_centre_of_mass(x, y):
 
 
 if False:
+    model = load_net()
     image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
     im = preprocess(image_files)
     out = model.predict(im)
@@ -68,45 +67,79 @@ if False:
 
 
 if True:
+    remove_level = 1
+    model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
+    use_vgg = False
+    # model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    # use_vgg = True
+
     out = []
-    image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
-    im = preprocess(image_files)
+    image_files = get_image_file_list('./images/positions/staple', 'png', with_path=True)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/shoe', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/corolla', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
+    out.append(model.predict(im))
+    image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     out = np.array(out)
     print(out.shape)
 
     # plot example tuning curves
     n = 30
-    labels = ('banana', 'shoe', 'car')
-    plt.figure(figsize=(10,3))
-    for i in range(3):
+    labels = ('staple', 'shoe', 'car', 'banana')
+    plt.figure(figsize=(6,6))
+    for i in range(4):
         object_responses = np.squeeze(out[i,:,:])
         print(object_responses.shape)
         maxima = np.max(object_responses, axis=0)
         ind = (-maxima).argsort()[:n]
         smoothed = smooth(object_responses, ind)
         # plt.plot(offsets, object_responses[:,ind])
-        plt.subplot(1,3,i+1)
+        plt.subplot(2,2,i+1)
 
-        plt.xlabel('Offset (pixels)', fontsize=16)
-        if i == 0:
+        if i >= 2:
+            plt.xlabel('Offset (pixels)', fontsize=16)
+        if i == 0 | i == 3:
             plt.ylabel('Response', fontsize=16)
+
         plt.title(labels[i], fontsize=16)
 
         plt.plot(offsets, smoothed)
-        plt.xticks([-75,-50,-25,0,25,50,75])
+        plt.xticks([-75,-25,25,75])
     plt.tight_layout()
-    plt.savefig('../figures/position-tuning.eps')
+
+    net = 'vgg16' if use_vgg else 'alexnet'
+    plt.savefig('../figures/position-tuning-' + net + '-' + str(remove_level) + '.eps')
+
     plt.show()
 
 
-if True:
+def correlations(out):
+    cc = np.corrcoef(out.T)
+    result = []
+    for i in range(cc.shape[0]):
+        for j in range(i+1,cc.shape[1]):
+            result.append(cc[i][j])
+    return result
+
+
+def invariant(out):
+    return np.mean(correlations(out)) > .5
+
+
+def clear_preference(out):
+    # one size is clearly preferred in that it elicits a stronger response for each shape
+    max_ind = np.argmax(out, axis=1)
+    return np.max(np.abs(np.diff(max_ind))) == 0
+
+
+
+if False:
     out = []
     image_files = get_image_file_list('./images/positions/f1', 'png', with_path=True)
     im = preprocess(image_files)
@@ -129,27 +162,7 @@ if True:
     out = np.array(out)
     print(out.shape)
 
-
-def correlations(out):
-    cc = np.corrcoef(out.T)
-    result = []
-    for i in range(cc.shape[0]):
-        for j in range(i+1,cc.shape[1]):
-            result.append(cc[i][j])
-    return result
-
-
-def invariant(out):
-    return np.mean(correlations(out)) > .5
-
-
-def clear_preference(out):
-    # one size is clearly preferred in that it elicits a stronger response for each shape
-    max_ind = np.argmax(out, axis=1)
-    return np.max(np.abs(np.diff(max_ind))) == 0
-
-
-if True: # plot invariance with Schwartz stimuli
+    # plot invariance with Schwartz stimuli
     i = 0
     c = 0
     n_invariant = 0
