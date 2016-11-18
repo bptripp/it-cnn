@@ -353,103 +353,117 @@ def make_3d(source_dir, dest_dir):
 
 
 if __name__ == '__main__':
-    # print(get_image_file_list('./source-images/lehky', 'ppm'))
-
-    print('Cleaning Lehky et al. images ...')
-    process_lehky_files('./source-images/lehky',
-                        './images/lehky-processed')
-
-    print('Making orientation stimuli ... ')
-    make_orientations('./source-images/banana.png',
-                      np.linspace(0, 360, 91),
-                      './images/banana-rotations')
-
-    make_orientations('./source-images/shoe.png',
-                      np.linspace(0, 360, 91),
-                      './images/shoe-rotations')
-
-    make_orientations('./source-images/corolla.png',
-                      np.linspace(0, 360, 91),
-                      './images/corolla-rotations')
-
-    print('Making clutter stimuli ... ')
-    make_clutters('./source-images/clutter',
-                  './images/clutter')
-
-    print('Making occlusion stimuli ... ')
-    make_occlusions('./images/occlusions')
-
-    print('Making size tuning stimuli ... ')
-    schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
-    make_sizes('./source-images/schwartz/f1.png',
-               schwartz_scales,
-               './images/scales/f1')
-    make_sizes('./source-images/schwartz/f2.png',
-               schwartz_scales,
-               './images/scales/f2')
-    make_sizes('./source-images/schwartz/f3.png',
-               schwartz_scales,
-               './images/scales/f3')
-    make_sizes('./source-images/schwartz/f4.png',
-               schwartz_scales,
-               './images/scales/f4')
-    make_sizes('./source-images/schwartz/f5.png',
-               schwartz_scales,
-               './images/scales/f5')
-    make_sizes('./source-images/schwartz/f6.png',
-               schwartz_scales,
-               './images/scales/f6')
-
-    scales = np.logspace(np.log10(.05), np.log10(1.2), 45)
-    make_sizes('./source-images/corolla.png',
-               scales,
-               './images/scales/corolla')
-
-    make_sizes('./source-images/shoe.png',
-               scales,
-               './images/scales/shoe')
-
-    make_sizes('./source-images/banana.png',
-               scales,
-               './images/scales/banana')
-
-    print('Making position tuning stimuli ... ')
+    # # print(get_image_file_list('./source-images/lehky', 'ppm'))
+    #
+    # print('Cleaning Lehky et al. images ...')
+    # process_lehky_files('./source-images/lehky',
+    #                     './images/lehky-processed')
+    #
+    # print('Making orientation stimuli ... ')
+    # make_orientations('./source-images/banana.png',
+    #                   np.linspace(0, 360, 91),
+    #                   './images/banana-rotations')
+    #
+    # make_orientations('./source-images/shoe.png',
+    #                   np.linspace(0, 360, 91),
+    #                   './images/shoe-rotations')
+    #
+    # make_orientations('./source-images/corolla.png',
+    #                   np.linspace(0, 360, 91),
+    #                   './images/corolla-rotations')
+    #
+    # make_orientations('./source-images/swiss_knife.jpg',
+    #                   np.linspace(0, 360, 91),
+    #                   './images/swiss-knife-rotations')
+    #
+    # make_orientations('./source-images/staple.png',
+    #                   np.linspace(0, 360, 91),
+    #                   './images/staple-rotations')
+    #
+    # print('Making clutter stimuli ... ')
+    # make_clutters('./source-images/clutter',
+    #               './images/clutter')
+    #
+    # print('Making occlusion stimuli ... ')
+    # make_occlusions('./images/occlusions')
+    #
+    # print('Making size tuning stimuli ... ')
+    # schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
+    # make_sizes('./source-images/schwartz/f1.png',
+    #            schwartz_scales,
+    #            './images/scales/f1')
+    # make_sizes('./source-images/schwartz/f2.png',
+    #            schwartz_scales,
+    #            './images/scales/f2')
+    # make_sizes('./source-images/schwartz/f3.png',
+    #            schwartz_scales,
+    #            './images/scales/f3')
+    # make_sizes('./source-images/schwartz/f4.png',
+    #            schwartz_scales,
+    #            './images/scales/f4')
+    # make_sizes('./source-images/schwartz/f5.png',
+    #            schwartz_scales,
+    #            './images/scales/f5')
+    # make_sizes('./source-images/schwartz/f6.png',
+    #            schwartz_scales,
+    #            './images/scales/f6')
+    #
+    # scales = np.logspace(np.log10(.05), np.log10(1.2), 45)
+    # make_sizes('./source-images/corolla.png',
+    #            scales,
+    #            './images/scales/corolla')
+    #
+    # make_sizes('./source-images/shoe.png',
+    #            scales,
+    #            './images/scales/shoe')
+    #
+    # make_sizes('./source-images/banana.png',
+    #            scales,
+    #            './images/scales/banana')
+    #
+    # print('Making position tuning stimuli ... ')
     offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
-    make_positions('./source-images/shoe.png', .4,
+    # make_positions('./source-images/shoe.png', .4,
+    #            offsets,
+    #            './images/positions/shoe')
+    #
+    # make_positions('./source-images/banana.png', .4,
+    #            offsets,
+    #            './images/positions/banana')
+    #
+    # make_positions('./source-images/corolla.png', .4,
+    #            offsets,
+    #            './images/positions/corolla')
+    #
+    make_positions('./source-images/staple.png', .4,
                offsets,
-               './images/positions/shoe')
-
-    make_positions('./source-images/banana.png', .4,
-               offsets,
-               './images/positions/banana')
-
-    make_positions('./source-images/corolla.png', .4,
-               offsets,
-               './images/positions/corolla')
-
-    # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
-    # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
-    schwartz_offset = 35
-    make_positions_schwartz('./source-images/schwartz/f1.png',
-                            schwartz_offset,
-                            './images/positions/f1')
-    make_positions_schwartz('./source-images/schwartz/f2.png',
-                            schwartz_offset,
-                            './images/positions/f2')
-    make_positions_schwartz('./source-images/schwartz/f3.png',
-                            schwartz_offset,
-                            './images/positions/f3')
-    make_positions_schwartz('./source-images/schwartz/f4.png',
-                            schwartz_offset,
-                            './images/positions/f4')
-    make_positions_schwartz('./source-images/schwartz/f5.png',
-                            schwartz_offset,
-                            './images/positions/f5')
-    make_positions_schwartz('./source-images/schwartz/f6.png',
-                            schwartz_offset,
-                            './images/positions/f6')
+               './images/positions/staple')
+    #
+    # # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
+    # # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
+    # schwartz_offset = 35
+    # make_positions_schwartz('./source-images/schwartz/f1.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f1')
+    # make_positions_schwartz('./source-images/schwartz/f2.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f2')
+    # make_positions_schwartz('./source-images/schwartz/f3.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f3')
+    # make_positions_schwartz('./source-images/schwartz/f4.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f4')
+    # make_positions_schwartz('./source-images/schwartz/f5.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f5')
+    # make_positions_schwartz('./source-images/schwartz/f6.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f6')
 
     # make_3d('/Users/bptripp/code/salman-IT/salman/images/scooter',
     #         '/Users/bptripp/code/salman-IT/salman/images/scooter-cropped')
     # make_3d('/Users/bptripp/code/salman-IT/salman/images/staple',
     #         '/Users/bptripp/code/salman-IT/salman/images/staple-cropped')
+    # make_3d('/Users/bptripp/code/salman-IT/salman/images/head',
+    #         '/Users/bptripp/code/salman-IT/salman/images/head-cropped')
