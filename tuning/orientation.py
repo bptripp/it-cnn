@@ -31,7 +31,7 @@ def smooth(out, ind, n=5):
     wrapped[2*l:3*l,:] = out[:,ind]
 
     filter = 1./n*np.ones(n)
-    print('filter: ' + str(filter))
+    # print('filter: ' + str(filter))
     for i in range(wrapped.shape[1]):
         wrapped[:,i] = fftconvolve(wrapped[:,i], filter, 'same')
 

@@ -14,8 +14,62 @@ from orientation import smooth
 offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
 
 
-def get_centre_of_mass(x, y):
-    pass
+def get_centre_of_mass(y):
+    """
+    Centre of mass of a tuning function as in Op De Beeck et al. (2000), including
+    only points >50% of peak.
+    """
+    ind = y > .5*np.max(y)
+    masked = np.zeros(y.shape)
+    masked[ind] = y[ind]
+    return np.sum(offsets*masked) / np.sum(masked)
+
+
+def get_width(y):
+    """
+    Width of a tuning function as in Op De Beeck et al. (2000); distance between where it falls
+    to 50% of peak on each side.
+    """
+    max_ind = np.argmax(y)
+    below_threshold = y < .5*np.max(y)
+    # print(below_threshold)
+    # low_and_left = np.logical_and(range(len(y)) < max_ind, below_threshold)
+    # low_and_right = np.logical_and(range(len(y)) > max_ind, below_threshold)
+    #
+    # if max(low_and_left):
+    #     low_ind = np.max(np.where(low_and_left))
+    # else:
+    #     low_ind = 0
+    #
+    # if max(low_and_right):
+    #     high_ind = np.min(np.where(low_and_right))
+    # else:
+    #     high_ind = len(y)-1
+
+    for i in range(max_ind, -1, -1):
+        if below_threshold[i]:
+            break
+    if i == 0:
+        low_ind = i
+    else:
+        low_ind = i + 1
+
+    for i in range(max_ind, len(y)):
+        if below_threshold[i]:
+            break
+    if i == len(y) - 1:
+        high_ind = i
+    else:
+        high_ind = i - 1
+
+    # print(y)
+    # print('threshold: ' + str(.5*np.max(y)))
+    # print(max_ind)
+    # print(low_ind)
+    # print(high_ind)
+    # print('*******')
+    #
+    return offsets[high_ind] - offsets[low_ind]
 
 
 if False:
@@ -67,11 +121,44 @@ if False:
 
 
 if True:
-    remove_level = 1
-    model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
-    use_vgg = False
-    # model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
-    # use_vgg = True
+    # alexnet 0: mean width: 146.208333333 std centres: 3.49089969478
+    # alexnet 1: mean width: 138.875 std centres: 5.96841285709
+    # alexnet 2: mean width: 112.583333333 std centres: 23.4025005388
+
+    # vgg 0: mean width: 150.0 std centres: 1.12932654355
+    # vgg 1: mean width: 150.0 std centres: 1.422815326
+    # vgg 2: mean width: 141.916666667 std centres: 11.2126510706
+
+    data = np.loadtxt(open("../data/op-de-beeck-6.csv","rb"),delimiter=",")
+    x = data[:,0]
+
+    it_std_rf_centre = np.std(x)
+    it_mean_rf_size = 10.3 # from Op De Beeck
+
+    alexnet_std_rf_centre = np.array([23.4025005388, 5.96841285709, 3.49089969478])
+    alexnet_mean_rf_size = np.array([112.583333333, 138.875, 146.208333333])
+    vgg_std_rf_centre = np.array([11.2126510706, 1.422815326, 1.12932654355])
+    vgg_mean_rf_size = np.array([141.916666667, 150.0, 150.0])
+
+    layers = [-2, -1, 0]
+    plt.figure(figsize=(5,3.5))
+    plt.plot(layers, alexnet_std_rf_centre / alexnet_mean_rf_size)
+    plt.plot(layers, vgg_std_rf_centre / vgg_mean_rf_size)
+    plt.plot(layers, it_std_rf_centre/it_mean_rf_size*np.array([1, 1, 1]), 'k--')
+    plt.xlabel('Distance from output (layers)', fontsize=16)
+    plt.ylabel('STD of centers / mean width', fontsize=16)
+    plt.xticks([-2,-1,0])
+    plt.tight_layout()
+    plt.savefig('../figures/position-variability.eps')
+    plt.show()
+
+
+if False:
+    remove_level = 2
+    # model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
+    # use_vgg = False
+    model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    use_vgg = True
 
     out = []
     image_files = get_image_file_list('./images/positions/staple', 'png', with_path=True)
@@ -87,18 +174,25 @@ if True:
     im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     out = np.array(out)
-    print(out.shape)
+    # print(out.shape)
 
     # plot example tuning curves
     n = 30
     labels = ('staple', 'shoe', 'car', 'banana')
     plt.figure(figsize=(6,6))
+    centres = []
+    widths = []
     for i in range(4):
         object_responses = np.squeeze(out[i,:,:])
-        print(object_responses.shape)
+        # print(object_responses.shape)
         maxima = np.max(object_responses, axis=0)
         ind = (-maxima).argsort()[:n]
         smoothed = smooth(object_responses, ind)
+
+        for j in range(smoothed.shape[1]):
+            centres.append(get_centre_of_mass(smoothed[:,j]))
+            widths.append(get_width(smoothed[:,j]))
+
         # plt.plot(offsets, object_responses[:,ind])
         plt.subplot(2,2,i+1)
 
@@ -112,6 +206,10 @@ if True:
         plt.plot(offsets, smoothed)
         plt.xticks([-75,-25,25,75])
     plt.tight_layout()
+
+    print(centres)
+    print(widths)
+    print('mean width: ' + str(np.mean(widths)) + ' std centres: ' + str(np.std(centres)))
 
     net = 'vgg16' if use_vgg else 'alexnet'
     plt.savefig('../figures/position-tuning-' + net + '-' + str(remove_level) + '.eps')
