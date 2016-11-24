@@ -118,6 +118,33 @@ def make_orientations(source_image_file, orientations, dest_path):
         misc.imsave(join(dest_path, source_name + alpha(int(orientation)) + '.png'), cropped)
 
 
+def add_borders(source_path, dest_path, scale=.2, dim=256, extension='png'):
+    if not exists(dest_path):
+        makedirs(dest_path)
+
+    files = get_image_file_list(source_path, extension)
+
+    for file in files:
+        image = misc.imread(join(source_path, file), mode='RGB')
+        image = misc.imresize(image, scale)
+
+        full = np.zeros((dim,dim,3), dtype=image.dtype)
+        full[:] = 255
+
+        corner = [dim/2 - 1 - image.shape[i]/2 for i in range(2)]
+        full[corner[0]:corner[0]+image.shape[0],corner[1]:corner[1]+image.shape[1],:] = image
+
+        # plt.figure()
+        # plt.subplot(2,1,1)
+        # plt.imshow(image)
+        # plt.subplot(2,1,2)
+        # plt.imshow(full)
+        # plt.show()
+
+        misc.imsave(join(dest_path, file), full)
+
+
+
 def make_sizes(source_image_file, scales, dest_path):
     if not exists(dest_path):
         makedirs(dest_path)
@@ -204,7 +231,7 @@ def make_positions_schwartz(source_image_file, offset, dest_path):
         # plt.show()
 
 
-def make_occlusions(dest_path):
+def make_occlusions(dest_path, shape_colour=[255,255,255], motion=False):
     def make_background():
         return 1 + 254*np.tile(np.random.randint(0, 2, [256,256,1]), [1,1,3])
 
@@ -230,9 +257,10 @@ def make_occlusions(dest_path):
 
                 val = 255
                 if d < width:
-                    image[i,j,:] = 255
+                    # image[i,j,:] = 255
+                    image[i,j,:] = shape_colour
                 elif d - width < 1:
-                    image[i,j,:] = (d-width)*image[i,j,:] + (1-d+width)*np.array([val,val,val], dtype=int)
+                    image[i,j,:] = (d-width)*image[i,j,:] + (1-d+width)*np.array(shape_colour, dtype=int) #[val,val,val]
 
     def draw_contour(image, x, y, width):
         for i in range(len(x)-1):
@@ -240,10 +268,26 @@ def make_occlusions(dest_path):
 
     def occlude(image, p):
         block_dim = 8
+        original_image = image.copy()
         for i in range(image.shape[0]/block_dim):
             for j in range(image.shape[1]/block_dim):
                 if np.random.rand() < p:
-                    image[block_dim*i:block_dim*(i+1), block_dim*j:block_dim*(j+1), :] = 255
+                    if not motion:
+                        image[block_dim*i:block_dim*(i+1), block_dim*j:block_dim*(j+1), :] = 255
+                    else:
+                        # simulate motion of ~1.5 degrees diagonally by moving down and right 20 pixels
+                        # simulate transience of occlusion at each point with transparency
+                        opacity = .05
+                        for k in range(20):
+                            top = block_dim*i+k
+                            bottom = min(block_dim*(i+1)+k,image.shape[0])
+                            left = block_dim*j+k
+                            right = min(block_dim*(j+1)+k, image.shape[1])
+                            change = opacity * (255 - original_image[top:bottom, left:right, :])
+                            image[top:bottom, left:right, :] = image[top:bottom, left:right, :] + change
+                            # image[top:bottom, left:right, :] \
+                            #     = (1-opacity) * image[top:bottom, left:right, :] \
+                            #     + opacity * 255
 
     def save_occlusions(name, x, y, line_width):
         d = join(dest_path, name)
@@ -353,6 +397,9 @@ def make_3d(source_dir, dest_dir):
 
 
 if __name__ == '__main__':
+    # add_borders('./source-images/simplification/from', './images/simplification/from')
+    # add_borders('./source-images/simplification/to', './images/simplification/to')
+
     # # print(get_image_file_list('./source-images/lehky', 'ppm'))
     #
     # print('Cleaning Lehky et al. images ...')
@@ -384,8 +431,14 @@ if __name__ == '__main__':
     # make_clutters('./source-images/clutter',
     #               './images/clutter')
     #
-    # print('Making occlusion stimuli ... ')
-    # make_occlusions('./images/occlusions')
+    print('Making occlusion stimuli ... ')
+    make_occlusions('./images/occlusions-black')
+    # make_occlusions('./images/occlusions-red', shape_colour=[0,255,255])
+    # Note in Kovacs et al, the shape was typically presented for 500ms, the occlusion
+    # pattern moved at 3deg/s, and shapes covered an area of about 10deg^2, so the
+    # occlusion pattern moved about half the shape height (diagonally down)
+    # make_occlusions('./images/occlusions-moving', motion=True)
+
     #
     # print('Making size tuning stimuli ... ')
     # schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
@@ -422,7 +475,7 @@ if __name__ == '__main__':
     #            './images/scales/banana')
     #
     # print('Making position tuning stimuli ... ')
-    offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
+    # offsets = np.linspace(-75, 75, 150/5+1, dtype=int)
     # make_positions('./source-images/shoe.png', .4,
     #            offsets,
     #            './images/positions/shoe')
@@ -435,9 +488,9 @@ if __name__ == '__main__':
     #            offsets,
     #            './images/positions/corolla')
     #
-    make_positions('./source-images/staple.png', .4,
-               offsets,
-               './images/positions/staple')
+    # make_positions('./source-images/staple.png', .4,
+    #            offsets,
+    #            './images/positions/staple')
     #
     # # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
     # # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels

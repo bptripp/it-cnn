@@ -1,14 +1,20 @@
 __author__ = 'bptripp'
 
+from os.path import join
 import numpy as np
 import matplotlib
 matplotlib.rcParams['xtick.labelsize'] = 14
 matplotlib.rcParams['ytick.labelsize'] = 14
 import matplotlib.pyplot as plt
 from cnn_stimuli import get_image_file_list
-from alexnet import preprocess, load_net
+from alexnet import preprocess, load_net, load_vgg
 
-model = load_net()
+use_vgg = False
+remove_level = 1
+if use_vgg:
+    model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+else:
+    model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
 
 def average_over_reps(responses, reps):
     n_occ = responses.shape[0]/reps
@@ -24,22 +30,28 @@ def average_over_reps(responses, reps):
 
 reps = 10
 out = []
-image_files = get_image_file_list('./images/occlusions/circle/', 'png', with_path=True)
-im = preprocess(image_files)
+
+# occlusion_type = 'black'
+occlusion_type = 'red'
+# occlusion_type = 'moving'
+base_directory = './images/occlusions-' + occlusion_type
+
+image_files = get_image_file_list(join(base_directory, 'circle'), 'png', with_path=True)
+im = preprocess(image_files, use_vgg=use_vgg)
 out.append(average_over_reps(model.predict(im), reps))
-image_files = get_image_file_list('./images/occlusions/square/', 'png', with_path=True)
-im = preprocess(image_files)
+image_files = get_image_file_list(join(base_directory, 'square'), 'png', with_path=True)
+im = preprocess(image_files, use_vgg=use_vgg)
 # plt.plot(model.predict(im))
 # plt.show()
 out.append(average_over_reps(model.predict(im), reps))
-image_files = get_image_file_list('./images/occlusions/star/', 'png', with_path=True)
-im = preprocess(image_files)
+image_files = get_image_file_list(join(base_directory, 'star'), 'png', with_path=True)
+im = preprocess(image_files, use_vgg=use_vgg)
 out.append(average_over_reps(model.predict(im), reps))
-image_files = get_image_file_list('./images/occlusions/triangle/', 'png', with_path=True)
-im = preprocess(image_files)
+image_files = get_image_file_list(join(base_directory, 'triangle'), 'png', with_path=True)
+im = preprocess(image_files, use_vgg=use_vgg)
 out.append(average_over_reps(model.predict(im), reps))
-image_files = get_image_file_list('./images/occlusions/strange/', 'png', with_path=True)
-im = preprocess(image_files)
+image_files = get_image_file_list(join(base_directory, 'strange'), 'png', with_path=True)
+im = preprocess(image_files, use_vgg=use_vgg)
 out.append(average_over_reps(model.predict(im), reps))
 out = np.array(out)
 print(out.shape)
@@ -85,7 +97,11 @@ print(means[0,:]-means[0,4])
 plt.xlabel('Shape rank', fontsize=16)
 plt.ylabel('Mean Response', fontsize=16)
 plt.tight_layout()
-plt.savefig('../figures/occlusions.eps')
+if use_vgg:
+    plt.savefig('../figures/occlusions-' + occlusion_type + '-vgg-' + str(remove_level) + '.eps')
+else:
+    plt.savefig('../figures/occlusions-' + occlusion_type + '-alexnet-' + str(remove_level) + '.eps')
+
 plt.show()
 # print(highest)
 
