@@ -73,6 +73,7 @@ def get_width(y):
 
 
 if False:
+    # plot selectivity vs. position tolerance
     model = load_net()
     image_files = get_image_file_list('./images/positions/banana', 'png', with_path=True)
     im = preprocess(image_files)
@@ -120,7 +121,7 @@ if False:
     plt.show()
 
 
-if True:
+if False:
     # alexnet 0: mean width: 146.208333333 std centres: 3.49089969478
     # alexnet 1: mean width: 138.875 std centres: 5.96841285709
     # alexnet 2: mean width: 112.583333333 std centres: 23.4025005388
@@ -154,6 +155,8 @@ if True:
 
 
 if False:
+    # plot tuning curve examples
+
     remove_level = 2
     # model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
     # use_vgg = False
@@ -236,26 +239,33 @@ def clear_preference(out):
     return np.max(np.abs(np.diff(max_ind))) == 0
 
 
+if True:
+    use_vgg = True
+    remove_level = 0
+    if use_vgg:
+        model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    else:
+        model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
 
-if False:
+
     out = []
     image_files = get_image_file_list('./images/positions/f1', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/f2', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/f3', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/f4', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/f5', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     image_files = get_image_file_list('./images/positions/f6', 'png', with_path=True)
-    im = preprocess(image_files)
+    im = preprocess(image_files, use_vgg=use_vgg)
     out.append(model.predict(im))
     out = np.array(out)
     print(out.shape)
@@ -286,7 +296,8 @@ if False:
         i = i + 1
     print(n_invariant)
     plt.tight_layout()
-    plt.savefig('../figures/position-invariance-schwartz.eps')
+    network_name = 'vgg' if use_vgg else 'alexnet'
+    plt.savefig('../figures/position-invariance-schwartz-' + network_name + '-' + str(remove_level) + '.eps')
     plt.show()
 
 
