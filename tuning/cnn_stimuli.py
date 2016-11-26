@@ -315,6 +315,10 @@ def make_occlusions(dest_path, shape_colour=[255,255,255], motion=False):
     save_occlusions('square', [a,b,b,a,a], [a,a,b,b,a], 2)
     save_occlusions('triangle', 128+np.array([18,18,-18,18]), 128+np.array([-18,18,0,-18]), 2)
     save_occlusions('strange', 128+np.array([20,20,10,10,-20,-20,-10,-10,0,0,10,10,20]), 128+np.array([-30,20,20,10,10,0,0,-20,-20,0,0,-30,-30]), 2)
+    save_occlusions('arrow', 128-1.25*np.array([30, 10, 10, -25, -25, 10, 10, 30]), 128+1.25*np.array([0, 18, 10, 10, -10, -10, -18, 0]), 2)
+    save_occlusions('h', 128-1.25*np.array([20, -20, -20, -5, -5, -20, -20, 20, 20, 5, 5, 20, 20]), 128-1.25*np.array([-15, -15, -5, -5, 5, 5, 15, 15, 5, 5, -5, -5, -15]), 2)
+    angle = np.linspace(0, 2*np.pi, 9)+np.pi/8
+    save_occlusions('stop', 128+38*np.cos(angle), 128+38*np.sin(angle), 2)
 
     # circle_image = make_background()
     # angle = np.linspace(0, 2*np.pi)
