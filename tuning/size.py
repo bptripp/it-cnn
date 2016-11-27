@@ -33,7 +33,7 @@ def invariant(out):
     #dims: object, size
     # return np.mean([cc[0,1], cc[0,2], cc[1,2]]) > .7
     # return np.mean([cc[0,1], cc[0,2], cc[1,2]]) > .5
-    return np.mean(correlations(out)) > .5
+    return np.mean(correlations(out)) > .75
 
 
 def clear_preference(out):
@@ -69,35 +69,86 @@ def bandwidth(scales, responses):
     # print(result)
     return result
 
+if True:
+    # plot Schwartz et al. (1983) example
+    deg13 = np.loadtxt(open('../data/deg13.csv', 'rb'), delimiter=',')
+    deg28 = np.loadtxt(open('../data/deg28.csv', 'rb'), delimiter=',')
+    deg50 = np.loadtxt(open('../data/deg50.csv', 'rb'), delimiter=',')
+    o = np.zeros((6,3))
+    o[:,0] = deg13[:,1]
+    o[:,1] = deg28[:,1]
+    o[:,2] = deg50[:,1]
+
+    plt.figure(figsize=(4,3.5))
+    plt.plot(range(1,7), o)
+    plt.tight_layout()
+    plt.xlabel('Stimulus #', fontsize=18)
+    plt.ylabel('Response (spikes/s)', fontsize=18)
+    plt.tight_layout()
+    plt.savefig('../figures/size-schwartz-example.eps')
+    plt.show()
+
+    # plt.semilogx([2, 4, 8, 16, 32, 64], o)
+
+    print('Schwartz correlation ' + str(np.mean(correlations(o))))
+
+
 if False:
+    # plot mean correlations and fraction with clear preference
+    layers = [-2, -1, 0]
+
+    plt.figure(figsize=(4,3.5))
+    alexnet_correlations = [0.495586845637, 0.530755560076, 0.721706983642]
+    vgg_correlations = [0.444102093071, 0.524417339524, 0.613046758844]
+    schwartz_correlation = 0.958892832321
+    plt.plot(layers, alexnet_correlations)
+    plt.plot(layers, vgg_correlations)
+    plt.plot(layers, schwartz_correlation*np.array([1, 1, 1]), 'k--')
+    plt.xlabel('Distance from output (layers)', fontsize=16)
+    plt.ylabel('Mean correlation', fontsize=16)
+    plt.xticks([-2,-1,0])
+    plt.ylim([0, 1])
+    plt.tight_layout()
+    plt.savefig('../figures/size-correlations.eps')
+    plt.show()
+
+    plt.figure(figsize=(4,3.5))
+    alexnet_fractions = [0.03125, 0.046875, 0.03125]
+    vgg_fractions = [0.0625, 0.046875, 0.015625]
+    plt.plot(layers, alexnet_fractions)
+    plt.plot(layers, vgg_fractions)
+    plt.xlabel('Distance from output (layers)', fontsize=16)
+    plt.ylabel('Fraction with preference', fontsize=16)
+    plt.xticks([-2,-1,0])
+    plt.ylim([0, 1])
+    plt.tight_layout()
+    plt.savefig('../figures/size-preferences.eps')
+    plt.show()
+
+
+if False:
+    use_vgg = True
+    remove_level = 0
+    if use_vgg:
+        model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    else:
+        model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
+
     out = []
-    image_files = get_image_file_list('./images/scales/f1', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/scales/f2', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/scales/f3', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/scales/f4', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/scales/f5', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/scales/f6', 'png', with_path=True)
-    im = preprocess(image_files)
-    out.append(model.predict(im))
+    stimuli = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6']
+    for stimulus in stimuli:
+        image_files = get_image_file_list('./images/scales/' + stimulus, 'png', with_path=True)
+        im = preprocess(image_files, use_vgg=use_vgg)
+        out.append(model.predict(im))
     out = np.array(out)
     print(out.shape)
 
-
-if False: # plot invariance with Schwartz stimuli
+    # plot invariance with Schwartz stimuli
     i = 0
     c = 0
     n_invariant = 0
     n_clear = 0
+    mean_correlations = []
     while c < 64:
         plt.subplot(8,8,c+1)
         o = out[:,:,i]
@@ -105,10 +156,6 @@ if False: # plot invariance with Schwartz stimuli
         if np.max(o) > 1:
             plt.plot(o)
             yl = plt.gca().get_ylim()
-
-            # print(out[:,size_ind,i])
-            # print(invariant(o))
-            clear_preference(o)
 
             if invariant(o):
                 n_invariant = n_invariant + 1
@@ -118,14 +165,20 @@ if False: # plot invariance with Schwartz stimuli
                 n_clear = n_clear + 1
                 plt.text(.1, yl[0] + (yl[1]-yl[0])*.8, 'p', fontsize=14)
 
+            mean_correlations.append(np.mean(correlations(o)))
+
             plt.xticks([])
             plt.yticks([])
-            # plt.title(str(i) + ' ' + str(invariant(o)))
             c = c + 1
         i = i + 1
-    print(n_invariant)
+
+    print(mean_correlations)
+    print('fraction with preference ' + str(float(n_clear)/64.))
+    print('mean correlation ' + str(np.nanmean(mean_correlations)))
+
     plt.tight_layout()
-    plt.savefig('../figures/size-invariance-schwartz.eps')
+    net = 'vgg16' if use_vgg else 'alexnet'
+    plt.savefig('../figures/size-invariance-' + net + '-' + str(remove_level) + '.eps')
     plt.show()
 
 
@@ -156,7 +209,7 @@ if False: #plot invariance with naturalistic stimuli
     plt.savefig('../figures/size-invariance.eps')
     plt.show()
 
-if True: # plot example tuning curves
+if False: # plot example tuning curves
     # image_files = get_image_file_list('./images/scales/banana', 'png', with_path=True)
     # image_files = get_image_file_list('./images/scales/shoe', 'png', with_path=True)
     image_files = get_image_file_list('./images/scales/corolla', 'png', with_path=True)

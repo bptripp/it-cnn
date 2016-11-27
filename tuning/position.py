@@ -236,10 +236,74 @@ def invariant(out):
 def clear_preference(out):
     # one size is clearly preferred in that it elicits a stronger response for each shape
     max_ind = np.argmax(out, axis=1)
-    return np.max(np.abs(np.diff(max_ind))) == 0
+    votes = np.zeros((5))
+    for m in max_ind:
+        votes[m] = votes[m] + 1
+
+    return np.max(votes) >= 5
+    # return np.max(np.abs(np.diff(max_ind))) == 0
+
+
+if False:
+    # plot Schwartz et al. (1983) example
+    U = np.loadtxt(open('../data/U.csv', 'rb'), delimiter=',')
+    L = np.loadtxt(open('../data/L.csv', 'rb'), delimiter=',')
+    C = np.loadtxt(open('../data/C.csv', 'rb'), delimiter=',')
+    I = np.loadtxt(open('../data/I.csv', 'rb'), delimiter=',')
+    F = np.loadtxt(open('../data/F.csv', 'rb'), delimiter=',')
+    o = np.zeros((6,5))
+    o[:,0] = U[:,1]
+    o[:,1] = L[:,1]
+    o[:,2] = C[:,1]
+    o[:,3] = I[:,1]
+    o[:,4] = F[:,1]
+
+    plt.figure(figsize=(4,3.5))
+    plt.plot(range(1,7), o)
+    plt.tight_layout()
+    plt.xlabel('Stimulus #', fontsize=18)
+    plt.ylabel('Response (spikes/s)', fontsize=18)
+    plt.tight_layout()
+    plt.savefig('../figures/position-schwartz-example.eps')
+    plt.show()
+
+    print('Schwartz correlation ' + str(np.mean(correlations(o))))
 
 
 if True:
+    # plot mean correlations and fraction with clear preference
+    layers = [-2, -1, 0]
+
+    plt.figure(figsize=(4,3.5))
+    alexnet_correlations = [0.350468586188, 0.603050738337, 0.813774571373]
+    vgg_correlations = [0.578857429221, 0.8000155323, 0.928289856194]
+    schwartz_correlation = 0.791299618127
+    plt.plot(layers, alexnet_correlations)
+    plt.plot(layers, vgg_correlations)
+    plt.plot(layers, schwartz_correlation*np.array([1, 1, 1]), 'k--')
+    plt.xlabel('Distance from output (layers)', fontsize=16)
+    plt.ylabel('Mean correlation', fontsize=16)
+    plt.xticks([-2,-1,0])
+    plt.ylim([0, 1])
+    plt.tight_layout()
+    plt.savefig('../figures/position-correlations.eps')
+    plt.show()
+
+    plt.figure(figsize=(4,3.5))
+    alexnet_fractions = [0.21875, 0.125, 0.046875]
+    vgg_fractions = [0.078125, 0.109375, 0.0]
+    plt.plot(layers, alexnet_fractions)
+    plt.plot(layers, vgg_fractions)
+    plt.xlabel('Distance from output (layers)', fontsize=16)
+    plt.ylabel('Fraction with preference', fontsize=16)
+    plt.xticks([-2,-1,0])
+    plt.ylim([0, 1])
+    plt.tight_layout()
+    plt.savefig('../figures/position-preferences.eps')
+    plt.show()
+
+
+if False:
     use_vgg = True
     remove_level = 0
     if use_vgg:
@@ -249,24 +313,11 @@ if True:
 
 
     out = []
-    image_files = get_image_file_list('./images/positions/f1', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/positions/f2', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/positions/f3', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/positions/f4', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/positions/f5', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
-    image_files = get_image_file_list('./images/positions/f6', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out.append(model.predict(im))
+    stimuli = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6']
+    for stimulus in stimuli:
+        image_files = get_image_file_list('./images/positions/'+stimulus, 'png', with_path=True)
+        im = preprocess(image_files, use_vgg=use_vgg)
+        out.append(model.predict(im))
     out = np.array(out)
     print(out.shape)
 
@@ -275,6 +326,7 @@ if True:
     c = 0
     n_invariant = 0
     n_clear = 0
+    mean_correlations = []
     while c < 64:
         plt.subplot(8,8,c+1)
         o = out[:,:,i]
@@ -290,11 +342,17 @@ if True:
                 n_clear = n_clear + 1
                 plt.text(.1, yl[0] + (yl[1]-yl[0])*.8, 'p', fontsize=14)
 
+            mean_correlations.append(np.mean(correlations(o)))
+
             plt.xticks([])
             plt.yticks([])
             c = c + 1
         i = i + 1
-    print(n_invariant)
+
+    print(mean_correlations)
+    print('fraction with preference ' + str(float(n_clear)/64.))
+    print('mean correlation ' + str(np.nanmean(mean_correlations)))
+
     plt.tight_layout()
     network_name = 'vgg' if use_vgg else 'alexnet'
     plt.savefig('../figures/position-invariance-schwartz-' + network_name + '-' + str(remove_level) + '.eps')
