@@ -203,12 +203,13 @@ def make_positions(source_image_file, scale, offsets, dest_path):
         # plt.show()
 
 
-def make_positions_schwartz(source_image_file, offset, dest_path):
+def make_positions_schwartz(source_image_file, offset, dest_path, scale=1):
     if not exists(dest_path):
         makedirs(dest_path)
 
     source_name = basename(source_image_file)[:-4]
     source = misc.imread(source_image_file)
+    source = misc.imresize(source, scale)
     background_colour = source[0,0,:]
     dim = 256
 
@@ -435,8 +436,8 @@ if __name__ == '__main__':
     # make_clutters('./source-images/clutter',
     #               './images/clutter')
     #
-    print('Making occlusion stimuli ... ')
-    make_occlusions('./images/occlusions-black')
+    # print('Making occlusion stimuli ... ')
+    # make_occlusions('./images/occlusions-black')
     # make_occlusions('./images/occlusions-red', shape_colour=[0,255,255])
     # Note in Kovacs et al, the shape was typically presented for 500ms, the occlusion
     # pattern moved at 3deg/s, and shapes covered an area of about 10deg^2, so the
@@ -445,7 +446,8 @@ if __name__ == '__main__':
 
     #
     # print('Making size tuning stimuli ... ')
-    # schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
+    # # schwartz_scales = [13**.5/28**.5, 1., 50**.5/28**.5]
+    # schwartz_scales = .5*np.array([13**.5/28**.5, 1., 50**.5/28**.5])
     # make_sizes('./source-images/schwartz/f1.png',
     #            schwartz_scales,
     #            './images/scales/f1')
@@ -496,27 +498,30 @@ if __name__ == '__main__':
     #            offsets,
     #            './images/positions/staple')
     #
-    # # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
-    # # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
+    # From Schwartz et al., 5 degrees up, down, left right with stimulus 28**.5=5.3 degrees wide
+    # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
+    # Our new stimuli ~150pixels wide and we'll scale by .5, so say 71-pixel shift
     # schwartz_offset = 35
-    # make_positions_schwartz('./source-images/schwartz/f1.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f1')
-    # make_positions_schwartz('./source-images/schwartz/f2.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f2')
-    # make_positions_schwartz('./source-images/schwartz/f3.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f3')
-    # make_positions_schwartz('./source-images/schwartz/f4.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f4')
-    # make_positions_schwartz('./source-images/schwartz/f5.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f5')
-    # make_positions_schwartz('./source-images/schwartz/f6.png',
-    #                         schwartz_offset,
-    #                         './images/positions/f6')
+    schwartz_scale = .4
+    schwartz_offset = schwartz_offset = (5/5.3)*(schwartz_scale*150)
+    make_positions_schwartz('./source-images/schwartz/f1.png',
+                            schwartz_offset,
+                            './images/positions/f1', scale=schwartz_scale)
+    make_positions_schwartz('./source-images/schwartz/f2.png',
+                            schwartz_offset,
+                            './images/positions/f2', scale=schwartz_scale)
+    make_positions_schwartz('./source-images/schwartz/f3.png',
+                            schwartz_offset,
+                            './images/positions/f3', scale=schwartz_scale)
+    make_positions_schwartz('./source-images/schwartz/f4.png',
+                            schwartz_offset,
+                            './images/positions/f4', scale=schwartz_scale)
+    make_positions_schwartz('./source-images/schwartz/f5.png',
+                            schwartz_offset,
+                            './images/positions/f5', scale=schwartz_scale)
+    make_positions_schwartz('./source-images/schwartz/f6.png',
+                            schwartz_offset,
+                            './images/positions/f6', scale=schwartz_scale)
 
     # make_3d('/Users/bptripp/code/salman-IT/salman/images/scooter',
     #         '/Users/bptripp/code/salman-IT/salman/images/scooter-cropped')
