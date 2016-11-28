@@ -5,7 +5,7 @@ import cPickle as pickle
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from alexnet import preprocess, load_net
+from alexnet import preprocess, load_net, load_vgg
 
 
 def excess_kurtosis(columns):
@@ -160,53 +160,94 @@ def plot_selectivity_and_sparseness(r_mat, font_size=50):
 
     # ax_arr[1].set_xscale('log')
 
-
-# image_files = get_image_file_list('/Users/bptripp/code/salman-IT/salman/images/lehky-processed/', 'png', with_path=True)
-# im = preprocess(image_files)
-#
-# model = load_net()
-#
-# start_time = time.time()
-# out = model.predict(im)
-# print('prediction time: ' + str(time.time() - start_time))
-#
-# with open('lehky.pkl', 'wb') as file:
-#     pickle.dump(out, file)
-
-with open('lehky.pkl', 'rb') as file:
-    out = pickle.load(file)
-
-
-n = 674
-# use first n or n with greatest responses
 if False:
-    rect = np.maximum(0, out[:,:n])
-else:
-    maxima = np.max(out, axis=0)
+    use_vgg = True
+    remove_level = 0
+    if use_vgg:
+        model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    else:
+        model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
 
-    ind = np.zeros(n, dtype=int)
-    c = 0
-    i = 0
-    while c < n:
-        if maxima[i] > 2:
-            ind[c] = i
-            c = c + 1
-        i = i + 1
+    # model = load_net(weights_path='../weights/alexnet_weights.h5')
 
-    # ind = (-maxima).argsort()[:n]
-
-    rect = np.maximum(0, out[:,ind])
+    image_files = get_image_file_list('./images/lehky-processed/', 'png', with_path=True)
+    im = preprocess(image_files, use_vgg=use_vgg)
 
 
-selectivity = excess_kurtosis(rect)
-sparseness = excess_kurtosis(rect.T)
+    start_time = time.time()
+    out = model.predict(im)
+    print('prediction time: ' + str(time.time() - start_time))
 
-print(np.mean(selectivity))
-print(np.mean(sparseness))
-print(np.max(selectivity))
-print(np.max(sparseness))
+    # with open('lehky.pkl', 'wb') as file:
+    #     pickle.dump(out, file)
+
+    # with open('lehky.pkl', 'rb') as file:
+    #     out = pickle.load(file)
+
+
+    n = 674
+    # use first n or n with greatest responses
+    if False:
+        rect = np.maximum(0, out[:,:n])
+    else:
+        maxima = np.max(out, axis=0)
+
+        ind = np.zeros(n, dtype=int)
+        c = 0
+        i = 0
+        while c < n:
+            if maxima[i] > 2:
+                ind[c] = i
+                c = c + 1
+            i = i + 1
+
+        # ind = (-maxima).argsort()[:n]
+
+        rect = np.maximum(0, out[:,ind])
+
+
+    selectivity = excess_kurtosis(rect)
+    sparseness = excess_kurtosis(rect.T)
+
+    print(np.mean(selectivity))
+    print(np.mean(sparseness))
+    print(np.max(selectivity))
+    print(np.max(sparseness))
+
+    plot_selectivity_and_sparseness(rect.T, 16)
+    network_name = 'vgg' if use_vgg else 'alexnet'
+    plt.savefig('../figures/selectivity-' + network_name + '-' + str(remove_level) + '.eps')
+    plt.show()
+
 
 if True:
+    plt.figure(figsize=(4,3.8))
+    plt.scatter(3.5, 9.61, c='k', marker='x', s=40, label='IT') # from Lehky et al. Fig 4A and 4B
+    selectivity_alexnet = [10.53, 28.59, 31.44]
+    sparseness_alexnet = [4.04, 8.85, 6.61]
+    selectivity_vgg = [26.79, 14.44, 34.65]
+    sparseness_vgg = [6.59, 3.40, 3.54]
+    plt.scatter([10.53, 28.59, 31.44], [4.04, 8.85, 6.61], c='b', marker='o', s=30, label='Alexnet')
+    plt.scatter([26.79, 14.44, 34.65], [6.59, 3.40, 3.54], c='g', marker='s', s=25, label='VGG-16')
+    plt.plot([0, 40], [0, 40], 'k')
+    plt.xlim([0,38])
+    plt.ylim([0,38])
+    gap = 0.4
+    plt.text(3.5+gap, 9.61+gap+.05, 'IT')
+    plt.text(selectivity_alexnet[0]+gap, sparseness_alexnet[0]+gap, 'out')
+    plt.text(selectivity_alexnet[1]+gap, sparseness_alexnet[1]+gap, 'out-1')
+    plt.text(selectivity_alexnet[2]+gap, sparseness_alexnet[2]+gap, 'out-2')
+    plt.text(selectivity_vgg[0]+gap, sparseness_vgg[0]+gap, 'out')
+    plt.text(selectivity_vgg[1]+gap, sparseness_vgg[1]+gap, 'out-1')
+    plt.text(selectivity_vgg[2]+gap, sparseness_vgg[2]+gap, 'out-2')
+    plt.xlabel('Selectivity')
+    plt.ylabel('Sparseness')
+    plt.tight_layout()
+    plt.savefig('../figures/cnn-selectivity.eps')
+    plt.show()
+
+
+if False:
     r_mat = rect.T
     n_neurons = r_mat.shape[0]
     activity_fractions = np.zeros(n_neurons)
@@ -219,15 +260,8 @@ if True:
     plt.show()
 
     rate = np.mean(rect,0)
-    with open('activity-fraction.pkl', 'wb') as file:
-        pickle.dump((ind, activity_fractions), file)
-
-
-
-plot_selectivity_and_sparseness(rect.T, 16)
-plt.savefig('../figures/selectivity-salman.eps')
-plt.show()
-
+    # with open('activity-fraction.pkl', 'wb') as file:
+    #     pickle.dump((ind, activity_fractions), file)
 
 
 # bins = np.linspace(0, 1000, 501)
@@ -250,7 +284,7 @@ plt.show()
 # plt.gca().set_yscale('log')
 # plt.show()
 
-
-rate = np.mean(rect,0)
-with open('rate-vs-selectivity.pkl', 'wb') as file:
-    pickle.dump((ind, rate, selectivity), file)
+#
+# rate = np.mean(rect,0)
+# with open('rate-vs-selectivity.pkl', 'wb') as file:
+#     pickle.dump((ind, rate, selectivity), file)
