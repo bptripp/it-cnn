@@ -404,6 +404,7 @@ def make_3d(source_dir, dest_dir):
 if __name__ == '__main__':
     # add_borders('./source-images/simplification/from', './images/simplification/from')
     # add_borders('./source-images/simplification/to', './images/simplification/to')
+    add_borders('./source-images/simplification/other', './images/simplification/other', scale=.85)
 
     # # print(get_image_file_list('./source-images/lehky', 'ppm'))
     #
@@ -502,26 +503,26 @@ if __name__ == '__main__':
     # our stimuli ~2/3 * 56 pixels = 37, so we want shifts of 35 pixels
     # Our new stimuli ~150pixels wide and we'll scale by .5, so say 71-pixel shift
     # schwartz_offset = 35
-    schwartz_scale = .4
-    schwartz_offset = schwartz_offset = (5/5.3)*(schwartz_scale*150)
-    make_positions_schwartz('./source-images/schwartz/f1.png',
-                            schwartz_offset,
-                            './images/positions/f1', scale=schwartz_scale)
-    make_positions_schwartz('./source-images/schwartz/f2.png',
-                            schwartz_offset,
-                            './images/positions/f2', scale=schwartz_scale)
-    make_positions_schwartz('./source-images/schwartz/f3.png',
-                            schwartz_offset,
-                            './images/positions/f3', scale=schwartz_scale)
-    make_positions_schwartz('./source-images/schwartz/f4.png',
-                            schwartz_offset,
-                            './images/positions/f4', scale=schwartz_scale)
-    make_positions_schwartz('./source-images/schwartz/f5.png',
-                            schwartz_offset,
-                            './images/positions/f5', scale=schwartz_scale)
-    make_positions_schwartz('./source-images/schwartz/f6.png',
-                            schwartz_offset,
-                            './images/positions/f6', scale=schwartz_scale)
+    # schwartz_scale = .4
+    # schwartz_offset = schwartz_offset = (5/5.3)*(schwartz_scale*150)
+    # make_positions_schwartz('./source-images/schwartz/f1.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f1', scale=schwartz_scale)
+    # make_positions_schwartz('./source-images/schwartz/f2.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f2', scale=schwartz_scale)
+    # make_positions_schwartz('./source-images/schwartz/f3.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f3', scale=schwartz_scale)
+    # make_positions_schwartz('./source-images/schwartz/f4.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f4', scale=schwartz_scale)
+    # make_positions_schwartz('./source-images/schwartz/f5.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f5', scale=schwartz_scale)
+    # make_positions_schwartz('./source-images/schwartz/f6.png',
+    #                         schwartz_offset,
+    #                         './images/positions/f6', scale=schwartz_scale)
 
     # make_3d('/Users/bptripp/code/salman-IT/salman/images/scooter',
     #         '/Users/bptripp/code/salman-IT/salman/images/scooter-cropped')
