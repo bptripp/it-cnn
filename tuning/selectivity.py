@@ -62,12 +62,14 @@ def activity_fraction(rates_per_object):
 
 
 
-def plot_selectivity_and_sparseness(r_mat, font_size=50):
+def plot_selectivity_and_sparseness(r_mat, font_size=10):
 
     # plt.figure(figsize=)
     # fig = plt.figure()
     # print(fig.get_size_inches())
-    f, ax_arr = plt.subplots(2, 1, sharex=True, figsize=(6,5))
+
+    # f, ax_arr = plt.subplots(2, 1, sharex=True, figsize=(3.5,5))
+    f, ax_arr = plt.subplots(2, 1, sharex=False, figsize=(3,5))
 
     # Single Neuron selectivities
     n_neurons = r_mat.shape[0]
@@ -90,79 +92,206 @@ def plot_selectivity_and_sparseness(r_mat, font_size=50):
     print('max selectivity: ' + str(np.max(selectivities)))
 
     # Plot selectivities ------------------------------------------------
-    ax_arr[0].hist(selectivities, bins=np.arange(-5, 850, step=1))
+    ax_arr[0].hist(np.clip(selectivities, -10, 25), bins=np.arange(-5, 850, step=1), color='red')
 
-    ax_arr[0].set_ylabel('Frequency', fontsize=font_size)
-    # ax_arr[0].set_xlabel('Kurtosis', fontsize=font_size)
+    ax_arr[0].set_ylabel('frequency', fontsize=font_size)
+    ax_arr[0].set_xlabel('kurtosis', fontsize=font_size)
     ax_arr[0].tick_params(axis='x', labelsize=font_size)
     ax_arr[0].tick_params(axis='y', labelsize=font_size)
     # ax_arr[0].set_xlim([0.1, 850])
 
-    ax_arr[0].annotate('Mean=%0.2f' % np.mean(selectivities),
-                       xy=(0.99, 0.9),
+    ax_arr[0].annotate('mean=%0.2f' % np.mean(selectivities),
+                       xy=(0.55, 0.98),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
                        verticalalignment='top')
 
-    ax_arr[0].annotate('N=%d' % len(selectivities),
-                       xy=(0.99, 0.75),
+    ax_arr[0].annotate('med.=%0.2f' % np.median(selectivities),
+                       xy=(0.55, 0.88),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
                        verticalalignment='top')
 
-    ax_arr[0].annotate('Single Neuron Selectivity',
-                       xy=(0.7, 0.95),
+    ax_arr[0].annotate('n=%d' % len(selectivities),
+                       xy=(0.55, 0.78),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
+                       verticalalignment='top')
+
+    ax_arr[0].annotate('single-neuron',
+                       xy=(0.01, 0.98),
+                       xycoords='axes fraction',
+                       fontsize=font_size,
+                       horizontalalignment='left',
                        verticalalignment='top')
     # ax_arr[0].set_ylim([0, 40])
     # ax_arr[0].set_xlim([0, 200])
-    ax_arr[0].set_ylim([0, 130])
+    # ax_arr[0].set_ylim([0, 130])
 
     # ax_arr[0].set_xscale('log')
 
     # Plot sparsenesses ------------------------------------------------
-    ax_arr[1].hist(sparsenesses, bins=np.arange(-5, 850, step=1))
+    ax_arr[1].hist(np.clip(sparsenesses, -10, 60), bins=np.arange(-5, 850, step=3))
 
-    ax_arr[1].set_ylabel('Frequency', fontsize=font_size)
-    ax_arr[1].set_xlabel('Kurtosis', fontsize=font_size)
+    ax_arr[1].set_ylabel('frequency', fontsize=font_size)
+    ax_arr[1].set_xlabel('kurtosis', fontsize=font_size)
     ax_arr[1].tick_params(axis='x', labelsize=font_size)
     ax_arr[1].tick_params(axis='y', labelsize=font_size)
 
-    ax_arr[1].annotate('Mean=%0.2f' % np.mean(sparsenesses),
-                       xy=(0.99, 0.9),
+    ax_arr[1].annotate('mean=%0.2f' % np.mean(sparsenesses),
+                       xy=(0.55, 0.98),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
                        verticalalignment='top')
 
-    ax_arr[1].annotate('N=%d' % len(sparsenesses),
-                       xy=(0.99, 0.75),
+    ax_arr[1].annotate('med.=%0.2f' % np.median(sparsenesses),
+                       xy=(0.55, 0.88),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
                        verticalalignment='top')
 
-    ax_arr[1].annotate('Population Sparseness',
-                       xy=(0.7, 0.95),
+    ax_arr[1].annotate('n=%d' % len(sparsenesses),
+                       xy=(0.55, 0.78),
                        xycoords='axes fraction',
                        fontsize=font_size,
-                       horizontalalignment='right',
+                       horizontalalignment='left',
                        verticalalignment='top')
 
-    ax_arr[1].set_xlim([-3, 70])
-    ax_arr[1].set_ylim([0, 180])
+    ax_arr[1].annotate('population',
+                       xy=(0.01, 0.98),
+                       xycoords='axes fraction',
+                       fontsize=font_size,
+                       horizontalalignment='left',
+                       verticalalignment='top')
+
+    ax_arr[0].set_xlim([-2, 26])
+    ax_arr[1].set_xlim([-2, 62])
+    # ax_arr[1].set_ylim([0, 300])
 
     plt.tight_layout()
 
     # ax_arr[1].set_xscale('log')
 
 if False:
+    with open('face-preference-alexnet-0.pkl', 'rb') as file:
+        alexnet0 = pickle.load(file)
+    with open('face-preference-alexnet-1.pkl', 'rb') as file:
+        alexnet1 = pickle.load(file)
+    with open('face-preference-alexnet-2.pkl', 'rb') as file:
+        alexnet2 = pickle.load(file)
+    with open('face-preference-vgg-0.pkl', 'rb') as file:
+        vgg0 = pickle.load(file)
+    with open('face-preference-vgg-1.pkl', 'rb') as file:
+        vgg1 = pickle.load(file)
+    with open('face-preference-vgg-2.pkl', 'rb') as file:
+        vgg2 = pickle.load(file)
+
+    edges = np.linspace(-5, 5, 21)
+    plt.figure(figsize=(8,4.5))
+    plt.subplot(2,3,1)
+    plt.hist(alexnet2, edges)
+    plt.ylabel('AlexNet Unit Count', fontsize=16)
+    plt.title('output-2', fontsize=16)
+    plt.subplot(2,3,2)
+    plt.hist(alexnet1, edges)
+    plt.title('output-1', fontsize=16)
+    plt.subplot(2,3,3)
+    plt.hist(alexnet0, edges)
+    plt.title('output', fontsize=16)
+    plt.subplot(2,3,4)
+    plt.hist(vgg2, edges, color='g')
+    plt.ylabel('VGG Unit Count', fontsize=16)
+    plt.subplot(2,3,5)
+    plt.hist(vgg1, edges, color='g')
+    plt.xlabel('Preference for Face Images', fontsize=16)
+    plt.subplot(2,3,6)
+    plt.hist(vgg0, edges, color='g')
+    plt.tight_layout(pad=0.05)
+    plt.savefig('../figures/selectivity-faces.eps')
+    plt.show()
+
+
+
+if False:
     use_vgg = True
-    remove_level = 0
+    remove_level = 2
+    if use_vgg:
+        model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    else:
+        model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
+
+    image_files = get_image_file_list('./images/lehky-processed/', 'png', with_path=True)
+    im = preprocess(image_files, use_vgg=use_vgg)
+    print(image_files)
+
+    mainly_faces = [197]
+    mainly_faces.extend(range(170, 178))
+    mainly_faces.extend(range(181, 196))
+    mainly_faces.extend(range(203, 214))
+    mainly_faces.extend(range(216, 224))
+
+    faces_major = [141, 142, 165, 169, 179, 196, 214, 215, 271]
+    faces_major.extend(range(144, 147))
+    faces_major.extend(range(157, 159))
+
+    faces_present = [131, 143, 178, 180, 198, 230, 233, 234, 305, 306, 316, 372, 470]
+    faces_present.extend(range(134, 141))
+    faces_present.extend(range(147, 150))
+    faces_present.extend(range(155, 157))
+    faces_present.extend(range(161, 165))
+    faces_present.extend(range(365, 369))
+    faces_present.extend(faces_major)
+    faces_present.extend(mainly_faces)
+
+    faces_ind = []
+    for i in range(len(image_files)):
+        for j in range(len(mainly_faces)):
+            if str(mainly_faces[j]) + '.' in image_files[i]:
+                faces_ind.append(i)
+
+    no_faces_ind = []
+    for i in range(len(image_files)):
+        has_face = False
+        for j in range(len(faces_present)):
+            if str(faces_present[j]) + '.' in image_files[i]:
+                has_face = True
+        if not has_face:
+            no_faces_ind.append(i)
+
+    # print(faces_ind)
+    # print(no_faces_ind)
+
+    start_time = time.time()
+    out = model.predict(im)
+    print(out.shape)
+
+    f = out[faces_ind,:]
+    nf = out[no_faces_ind,:]
+    print(f.shape)
+    print(nf.shape)
+
+    face_preference = np.mean(f, axis=0) - np.mean(nf, axis=0)
+    vf = np.var(f, axis=0) + 1e-3 # small constant in case zero variance due to lack of response
+    vnf = np.var(nf, axis=0) + 1e-3
+    d_prime = face_preference / np.sqrt((vf + vnf)/2)
+
+    network_name = 'vgg' if use_vgg else 'alexnet'
+    with open('face-preference-' + network_name + '-' + str(remove_level) + '.pkl', 'wb') as file:
+        pickle.dump(d_prime, file)
+
+    print(d_prime)
+    plt.hist(d_prime)
+    plt.show()
+
+
+if True:
+    use_vgg = False
+    remove_level = 1
     if use_vgg:
         model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
     else:
@@ -214,21 +343,21 @@ if False:
     print(np.max(selectivity))
     print(np.max(sparseness))
 
-    plot_selectivity_and_sparseness(rect.T, 16)
+    plot_selectivity_and_sparseness(rect.T, 11)
     network_name = 'vgg' if use_vgg else 'alexnet'
-    plt.savefig('../figures/selectivity-' + network_name + '-' + str(remove_level) + '.eps')
+    plt.savefig('../figures/selectivity-' + network_name + '-' + str(remove_level) + '-talk.eps')
     plt.show()
 
 
-if True:
+if False:
     plt.figure(figsize=(4,3.8))
-    plt.scatter(3.5, 9.61, c='k', marker='x', s=40, label='IT') # from Lehky et al. Fig 4A and 4B
+    plt.scatter(3.5, 12.51, c='k', marker='x', s=40, label='IT') # from Lehky et al. Fig 4A and 4B
     selectivity_alexnet = [10.53, 28.59, 31.44]
     sparseness_alexnet = [4.04, 8.85, 6.61]
     selectivity_vgg = [26.79, 14.44, 34.65]
     sparseness_vgg = [6.59, 3.40, 3.54]
     plt.scatter([10.53, 28.59, 31.44], [4.04, 8.85, 6.61], c='b', marker='o', s=30, label='Alexnet')
-    plt.scatter([26.79, 14.44, 34.65], [6.59, 3.40, 3.54], c='g', marker='s', s=25, label='VGG-16')
+    plt.scatter([26.79, 14.44, 34.65], [6.59, 3.40, 3.54], c='g', marker='s', s=45, label='VGG-16')
     plt.plot([0, 40], [0, 40], 'k')
     plt.xlim([0,38])
     plt.ylim([0,38])

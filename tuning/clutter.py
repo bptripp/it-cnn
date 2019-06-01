@@ -9,10 +9,10 @@ from cnn_stimuli import get_image_file_list
 from alexnet import preprocess, load_net, load_vgg
 
 def get_clutter_responses(remove_level):
-    # model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
-    # use_vgg = False
-    model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
-    use_vgg = True
+    model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
+    use_vgg = False
+    # model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
+    # use_vgg = True
 
     bottom_dir = './images/clutter/bottom/'
     bottom_image_files = get_image_file_list(bottom_dir, 'png', with_path=True)
@@ -72,7 +72,7 @@ if True:
         #     plt.xlabel('Angle from horizontal (radians)', fontsize=14)
         plt.yticks([])
         plt.xticks([0, np.pi/4], ['0', 'pi/4'])
-        plt.plot([np.pi/8, np.pi/8], plt.gca().get_ylim(), 'r')
+        plt.plot([np.arctan(.5), np.arctan(.5)], plt.gca().get_ylim(), 'r')
 
     plt.tight_layout()
     plt.savefig('../figures/clutter-angles.eps')

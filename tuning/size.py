@@ -69,7 +69,7 @@ def bandwidth(scales, responses):
     # print(result)
     return result
 
-if True:
+if False:
     # plot Schwartz et al. (1983) example
     deg13 = np.loadtxt(open('../data/deg13.csv', 'rb'), delimiter=',')
     deg28 = np.loadtxt(open('../data/deg28.csv', 'rb'), delimiter=',')
@@ -126,7 +126,7 @@ if False:
     plt.show()
 
 
-if False:
+if True:
     use_vgg = True
     remove_level = 0
     if use_vgg:

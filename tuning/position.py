@@ -121,7 +121,7 @@ if False:
     plt.show()
 
 
-if False:
+if True:
     # alexnet 0: mean width: 146.208333333 std centres: 3.49089969478
     # alexnet 1: mean width: 138.875 std centres: 5.96841285709
     # alexnet 2: mean width: 112.583333333 std centres: 23.4025005388
@@ -136,15 +136,23 @@ if False:
     it_std_rf_centre = np.std(x)
     it_mean_rf_size = 10.3 # from Op De Beeck
 
-    alexnet_std_rf_centre = np.array([23.4025005388, 5.96841285709, 3.49089969478])
-    alexnet_mean_rf_size = np.array([112.583333333, 138.875, 146.208333333])
-    vgg_std_rf_centre = np.array([11.2126510706, 1.422815326, 1.12932654355])
-    vgg_mean_rf_size = np.array([141.916666667, 150.0, 150.0])
+    # # strongest 30 responses ...
+    # alexnet_std_rf_centre = np.array([23.4025005388, 5.96841285709, 3.49089969478])
+    # alexnet_mean_rf_size = np.array([112.583333333, 138.875, 146.208333333])
+    # vgg_std_rf_centre = np.array([11.2126510706, 1.422815326, 1.12932654355])
+    # vgg_mean_rf_size = np.array([141.916666667, 150.0, 150.0])
+
+    # first 30 strong responses ...
+    alexnet_std_rf_centre = np.array([30.2666393886, 14.4771892017, 5.46262378919])
+    alexnet_mean_rf_size = np.array([62.5833333333, 108.625, 140.333333333])
+    vgg_std_rf_centre = np.array([22.2973512678, 3.0048651618, 2.26856624582])
+    vgg_mean_rf_size = np.array([97.5, 147.916666667, 149.625])
+
 
     layers = [-2, -1, 0]
     plt.figure(figsize=(5,3.5))
-    plt.plot(layers, alexnet_std_rf_centre / alexnet_mean_rf_size)
-    plt.plot(layers, vgg_std_rf_centre / vgg_mean_rf_size)
+    plt.plot(layers, alexnet_std_rf_centre / alexnet_mean_rf_size, 'o-')
+    plt.plot(layers, vgg_std_rf_centre / vgg_mean_rf_size, 's-')
     plt.plot(layers, it_std_rf_centre/it_mean_rf_size*np.array([1, 1, 1]), 'k--')
     plt.xlabel('Distance from output (layers)', fontsize=16)
     plt.ylabel('STD of centers / mean width', fontsize=16)
@@ -157,7 +165,7 @@ if False:
 if False:
     # plot tuning curve examples
 
-    remove_level = 2
+    remove_level = 0
     # model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=remove_level)
     # use_vgg = False
     model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=remove_level)
@@ -189,7 +197,17 @@ if False:
         object_responses = np.squeeze(out[i,:,:])
         # print(object_responses.shape)
         maxima = np.max(object_responses, axis=0)
-        ind = (-maxima).argsort()[:n]
+
+        # ind = (-maxima).argsort()[:n]
+
+        print('using first large n')
+        ind = []
+        j = 0
+        while len(ind) < n:
+            if maxima[j] > 2:
+                ind.append(j)
+            j = j + 1
+
         smoothed = smooth(object_responses, ind)
 
         for j in range(smoothed.shape[1]):
@@ -270,7 +288,7 @@ if False:
     print('Schwartz correlation ' + str(np.mean(correlations(o))))
 
 
-if True:
+if False:
     # plot mean correlations and fraction with clear preference
     layers = [-2, -1, 0]
 

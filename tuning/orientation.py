@@ -45,7 +45,17 @@ def plot_curves(out, n, kernel_len=5, angles=None, normalize=False):
 
     maxima = np.max(out, axis=0)
     # n = 10
-    ind = (-maxima).argsort()[:n]
+    # ind = (-maxima).argsort()[:n]
+    # print('using first n')
+    # ind = range(n)
+    print('using first large n')
+    ind = []
+    i = 0
+    while len(ind) < n:
+        if maxima[i] > 2:
+            ind.append(i)
+        i = i + 1
+    print(ind)
 
     smoothed = smooth(out, ind, n=kernel_len)
     # if smooth:
@@ -151,52 +161,54 @@ def plot_csv_tuning_curve(filename):
 if __name__ == '__main__':
     # model = load_vgg(weights_path='../weights/vgg16_weights.h5', remove_level=2)
     # use_vgg = True
-    model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=1)
-    use_vgg = False
-
-    plt.figure(figsize=(6,6))
-    # image_files = get_image_file_list('./images/swiss-knife-rotations/', 'png', with_path=True)
-    image_files = get_image_file_list('./images/staple-rotations/', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out = model.predict(im)
-    # plt.subplot(2,2,1)
-    plt.subplot2grid((5,2), (0,0), rowspan=2)
-    plot_curves(out, 10)
-    # plt.ylim([0,12])
-    plt.ylabel('Response')
-    image_files = get_image_file_list('./images/shoe-rotations/', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out = model.predict(im)
-    # plt.subplot(2,2,2)
-    plt.subplot2grid((5,2), (0,1), rowspan=2)
-    plot_curves(out, 10)
-    # plt.ylim([0,12])
-    image_files = get_image_file_list('./images/corolla-rotations/', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out = model.predict(im)
-    # plt.subplot(2,2,3)
-    plt.subplot2grid((5,2), (3,0), rowspan=2)
-    plot_curves(out, 10)
-    # plt.ylim([0,12])
-    plt.xlabel('Angle (degrees)')
-    plt.ylabel('Response')
-    image_files = get_image_file_list('./images/banana-rotations/', 'png', with_path=True)
-    im = preprocess(image_files, use_vgg=use_vgg)
-    out = model.predict(im)
-    # plt.subplot(2,2,4)
-    plt.subplot2grid((5,2), (3,1), rowspan=2)
-    plot_curves(out, 10)
-    # plt.ylim([0,12])
-    plt.xlabel('Angle (degrees)')
-    plt.tight_layout()
-    plt.savefig('../figures/orientation.eps')
-    plt.show()
-
-    # plot_freiwald_histograms()
-    # # plot_logothetis_and_freiwald_tuning_data()
+    # model = load_net(weights_path='../weights/alexnet_weights.h5', remove_level=1)
+    # use_vgg = False
     #
+    # plt.figure(figsize=(6,6))
+    # # image_files = get_image_file_list('./images/swiss-knife-rotations/', 'png', with_path=True)
+    # image_files = get_image_file_list('./images/staple-rotations/', 'png', with_path=True)
+    # im = preprocess(image_files, use_vgg=use_vgg)
+    # out = model.predict(im)
+    # # plt.subplot(2,2,1)
+    # plt.subplot2grid((5,2), (0,0), rowspan=2)
+    # plot_curves(out, 10)
+    # # plt.ylim([0,12])
+    # plt.ylabel('Response')
+    # image_files = get_image_file_list('./images/shoe-rotations/', 'png', with_path=True)
+    # im = preprocess(image_files, use_vgg=use_vgg)
+    # out = model.predict(im)
+    # # plt.subplot(2,2,2)
+    # plt.subplot2grid((5,2), (0,1), rowspan=2)
+    # plot_curves(out, 10)
+    # # plt.ylim([0,12])
+    # image_files = get_image_file_list('./images/corolla-rotations/', 'png', with_path=True)
+    # im = preprocess(image_files, use_vgg=use_vgg)
+    # out = model.predict(im)
+    # # plt.subplot(2,2,3)
+    # plt.subplot2grid((5,2), (3,0), rowspan=2)
+    # plot_curves(out, 10)
+    # # plt.ylim([0,12])
+    # plt.xlabel('Angle (degrees)')
+    # plt.ylabel('Response')
+    # image_files = get_image_file_list('./images/banana-rotations/', 'png', with_path=True)
+    # im = preprocess(image_files, use_vgg=use_vgg)
+    # out = model.predict(im)
+    # # plt.subplot(2,2,4)
+    # plt.subplot2grid((5,2), (3,1), rowspan=2)
+    # plot_curves(out, 10)
+    # # plt.ylim([0,12])
+    # plt.xlabel('Angle (degrees)')
+    # plt.tight_layout()
+    # plt.savefig('../figures/orientation.eps')
+    # plt.show()
+
+
+    plot_freiwald_histograms()
+    # # plot_logothetis_and_freiwald_tuning_data()
+
+
     # remove_levels = [0,1,2]
-    # use_vgg = True
+    # use_vgg = False
     #
     # # remove_levels = [0,1,2]
     # # use_vgg = False
